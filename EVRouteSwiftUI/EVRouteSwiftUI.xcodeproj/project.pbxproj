@@ -1,0 +1,837 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F6547EED2E3D1EE10056DD59 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547ED72E3D1EE10056DD59 /* HomeViewModel.swift */; };
+		F6547EEE2E3D1EE10056DD59 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EDA2E3D1EE10056DD59 /* HomeView.swift */; };
+		F6547EEF2E3D1EE10056DD59 /* Endpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547ECE2E3D1EE10056DD59 /* Endpoints.swift */; };
+		F6547EF02E3D1EE10056DD59 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547ED02E3D1EE10056DD59 /* NetworkService.swift */; };
+		F6547EF12E3D1EE10056DD59 /* StationDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EDC2E3D1EE10056DD59 /* StationDetailView.swift */; };
+		F6547EF22E3D1EE10056DD59 /* EVRouteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EC52E3D1EE10056DD59 /* EVRouteApp.swift */; };
+		F6547EF32E3D1EE10056DD59 /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547ECA2E3D1EE10056DD59 /* User.swift */; };
+		F6547EF52E3D1EE10056DD59 /* Vehicle.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547ECB2E3D1EE10056DD59 /* Vehicle.swift */; };
+		F6547EF62E3D1EE10056DD59 /* AuthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547ECD2E3D1EE10056DD59 /* AuthManager.swift */; };
+		F6547EF72E3D1EE10056DD59 /* MockAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547ECF2E3D1EE10056DD59 /* MockAuthService.swift */; };
+		F6547EF82E3D1EE10056DD59 /* AuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547ED92E3D1EE10056DD59 /* AuthenticationView.swift */; };
+		F6547EFA2E3D1EE10056DD59 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EDB2E3D1EE10056DD59 /* MainTabView.swift */; };
+		F6547EFB2E3D1EE10056DD59 /* ChargingStation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EC82E3D1EE10056DD59 /* ChargingStation.swift */; };
+		F6547EFC2E3D1EE10056DD59 /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EC92E3D1EE10056DD59 /* Route.swift */; };
+		F6547EFF2E3D1F6A0056DD59 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F6547EFE2E3D1F6A0056DD59 /* Assets.xcassets */; };
+		F6547F002E3D1FFF0056DD59 /* HomeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EEA2E3D1EE10056DD59 /* HomeViewModelTests.swift */; };
+		F6547F012E3D20050056DD59 /* NetworkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EE82E3D1EE10056DD59 /* NetworkServiceTests.swift */; };
+		F6547F022E3D200B0056DD59 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EE62E3D1EE10056DD59 /* ModelTests.swift */; };
+		F66A0E1D2E3D9DEB00036D2D /* SimpleLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66A0E1C2E3D9DEB00036D2D /* SimpleLocationManager.swift */; };
+		F66A0E1F2E3D9EF300036D2D /* SimpleAuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66A0E1E2E3D9EF300036D2D /* SimpleAuthenticationView.swift */; };
+		F6C5DD222E3D857100E27CB6 /* VehicleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD212E3D857100E27CB6 /* VehicleManager.swift */; };
+		F6C5DD242E3D86AA00E27CB6 /* VehicleSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD232E3D86AA00E27CB6 /* VehicleSelectionView.swift */; };
+		F6C5DD2A2E3D89A200E27CB6 /* BatterySlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD272E3D89A200E27CB6 /* BatterySlider.swift */; };
+		F6C5DD2B2E3D89A200E27CB6 /* LocationSearchField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD282E3D89A200E27CB6 /* LocationSearchField.swift */; };
+		F6C5DD2D2E3D89A200E27CB6 /* RoutePlanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD292E3D89A200E27CB6 /* RoutePlanningView.swift */; };
+		F6C5DD2F2E3D89D500E27CB6 /* RoutePlanningViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD2E2E3D89D500E27CB6 /* RoutePlanningViewModel.swift */; };
+		F6C5DD332E3D8F1100E27CB6 /* RouteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD322E3D8F1100E27CB6 /* RouteService.swift */; };
+		F6C5DD342E3D8F1100E27CB6 /* MockRouteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD312E3D8F1100E27CB6 /* MockRouteService.swift */; };
+		F6C5DD362E3D933D00E27CB6 /* SavedRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD352E3D933D00E27CB6 /* SavedRoute.swift */; };
+		F6C5DD392E3D93B100E27CB6 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD372E3D93B100E27CB6 /* LocationManager.swift */; };
+		F6C5DD3A2E3D93B100E27CB6 /* RouteStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD382E3D93B100E27CB6 /* RouteStorageManager.swift */; };
+		F6C5DD3C2E3D93D700E27CB6 /* PolylineDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD3B2E3D93D700E27CB6 /* PolylineDecoder.swift */; };
+		F6C5DD422E3D950800E27CB6 /* RouteMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD402E3D950800E27CB6 /* RouteMapView.swift */; };
+		F6C5DD432E3D950800E27CB6 /* RouteAmenityChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD3F2E3D950800E27CB6 /* RouteAmenityChip.swift */; };
+		F6C5DD442E3D950800E27CB6 /* RouteResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD412E3D950800E27CB6 /* RouteResultsView.swift */; };
+		F6C5DD462E3D975800E27CB6 /* RouteHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD452E3D975800E27CB6 /* RouteHistoryView.swift */; };
+			F6D0B0012E4A0A0000AA00AA /* NearbyStationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */; };
+			F6D0B0022E4A0A0000AA00AA /* NearbyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */; };
+			F6D0B0032E4A0A0000AA00AA /* NearbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F6547E7D2E3D05B60056DD59 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F6547E282E3CFD020056DD59 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F6547E2F2E3CFD020056DD59;
+			remoteInfo = EVRouteSwiftUI;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F6547E302E3CFD020056DD59 /* EVRouteSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EVRouteSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F6547E792E3D05B60056DD59 /* EVRouteSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EVRouteSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F6547EC52E3D1EE10056DD59 /* EVRouteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EVRouteApp.swift; sourceTree = "<group>"; };
+		F6547EC82E3D1EE10056DD59 /* ChargingStation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChargingStation.swift; sourceTree = "<group>"; };
+		F6547EC92E3D1EE10056DD59 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
+		F6547ECA2E3D1EE10056DD59 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		F6547ECB2E3D1EE10056DD59 /* Vehicle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vehicle.swift; sourceTree = "<group>"; };
+		F6547ECD2E3D1EE10056DD59 /* AuthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthManager.swift; sourceTree = "<group>"; };
+		F6547ECE2E3D1EE10056DD59 /* Endpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoints.swift; sourceTree = "<group>"; };
+		F6547ECF2E3D1EE10056DD59 /* MockAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthService.swift; sourceTree = "<group>"; };
+		F6547ED02E3D1EE10056DD59 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		F6547ED72E3D1EE10056DD59 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModel.swift; sourceTree = "<group>"; };
+		F6547ED92E3D1EE10056DD59 /* AuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationView.swift; sourceTree = "<group>"; };
+		F6547EDA2E3D1EE10056DD59 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		F6547EDB2E3D1EE10056DD59 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		F6547EDC2E3D1EE10056DD59 /* StationDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationDetailView.swift; sourceTree = "<group>"; };
+		F6547EE62E3D1EE10056DD59 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
+		F6547EE82E3D1EE10056DD59 /* NetworkServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkServiceTests.swift; sourceTree = "<group>"; };
+		F6547EEA2E3D1EE10056DD59 /* HomeViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewModelTests.swift; sourceTree = "<group>"; };
+		F6547EFE2E3D1F6A0056DD59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F66A0E1C2E3D9DEB00036D2D /* SimpleLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleLocationManager.swift; sourceTree = "<group>"; };
+		F66A0E1E2E3D9EF300036D2D /* SimpleAuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleAuthenticationView.swift; sourceTree = "<group>"; };
+		F6C5DD212E3D857100E27CB6 /* VehicleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VehicleManager.swift; sourceTree = "<group>"; };
+		F6C5DD232E3D86AA00E27CB6 /* VehicleSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VehicleSelectionView.swift; path = Features/Home/Views/VehicleSelectionView.swift; sourceTree = SOURCE_ROOT; };
+		F6C5DD262E3D89A200E27CB6 /* AmenityChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmenityChip.swift; path = Features/RouteDetails/Views/AmenityChip.swift; sourceTree = SOURCE_ROOT; };
+		F6C5DD272E3D89A200E27CB6 /* BatterySlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BatterySlider.swift; path = Features/RouteDetails/Views/BatterySlider.swift; sourceTree = SOURCE_ROOT; };
+		F6C5DD282E3D89A200E27CB6 /* LocationSearchField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocationSearchField.swift; path = Features/RouteDetails/Views/LocationSearchField.swift; sourceTree = SOURCE_ROOT; };
+		F6C5DD292E3D89A200E27CB6 /* RoutePlanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RoutePlanningView.swift; path = Features/RouteDetails/Views/RoutePlanningView.swift; sourceTree = SOURCE_ROOT; };
+		F6C5DD2E2E3D89D500E27CB6 /* RoutePlanningViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanningViewModel.swift; sourceTree = "<group>"; };
+		F6C5DD312E3D8F1100E27CB6 /* MockRouteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MockRouteService.swift; path = Features/RouteDetails/Services/MockRouteService.swift; sourceTree = SOURCE_ROOT; };
+		F6C5DD322E3D8F1100E27CB6 /* RouteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RouteService.swift; path = Features/RouteDetails/Services/RouteService.swift; sourceTree = SOURCE_ROOT; };
+		F6C5DD352E3D933D00E27CB6 /* SavedRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedRoute.swift; sourceTree = "<group>"; };
+		F6C5DD372E3D93B100E27CB6 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
+		F6C5DD382E3D93B100E27CB6 /* RouteStorageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteStorageManager.swift; sourceTree = "<group>"; };
+		F6C5DD3B2E3D93D700E27CB6 /* PolylineDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolylineDecoder.swift; sourceTree = "<group>"; };
+		F6C5DD3D2E3D94E800E27CB6 /* LocationSearchField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchField.swift; sourceTree = "<group>"; };
+		F6C5DD3F2E3D950800E27CB6 /* RouteAmenityChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteAmenityChip.swift; sourceTree = "<group>"; };
+		F6C5DD402E3D950800E27CB6 /* RouteMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapView.swift; sourceTree = "<group>"; };
+		F6C5DD412E3D950800E27CB6 /* RouteResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteResultsView.swift; sourceTree = "<group>"; };
+		F6C5DD452E3D975800E27CB6 /* RouteHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteHistoryView.swift; sourceTree = "<group>"; };
+			F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyStationsService.swift; path = Features/Nearby/Services/NearbyStationsService.swift; sourceTree = SOURCE_ROOT; };
+			F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyViewModel.swift; path = Features/Nearby/ViewModels/NearbyViewModel.swift; sourceTree = SOURCE_ROOT; };
+			F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyView.swift; path = Features/Nearby/Views/NearbyView.swift; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F6547E2D2E3CFD020056DD59 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6547E762E3D05B60056DD59 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F6547E272E3CFD020056DD59 = {
+			isa = PBXGroup;
+			children = (
+				F6547EFE2E3D1F6A0056DD59 /* Assets.xcassets */,
+				F6547EC62E3D1EE10056DD59 /* App */,
+				F6547ED32E3D1EE10056DD59 /* Core */,
+				F6547EE52E3D1EE10056DD59 /* Features */,
+				F6547EEC2E3D1EE10056DD59 /* Tests */,
+				F6547E312E3CFD020056DD59 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F6547E312E3CFD020056DD59 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F6547E302E3CFD020056DD59 /* EVRouteSwiftUI.app */,
+				F6547E792E3D05B60056DD59 /* EVRouteSwiftUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F6547EC62E3D1EE10056DD59 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				F6547EC52E3D1EE10056DD59 /* EVRouteApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		F6547EC72E3D1EE10056DD59 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		F6547ECC2E3D1EE10056DD59 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F6C5DD352E3D933D00E27CB6 /* SavedRoute.swift */,
+				F6547EC82E3D1EE10056DD59 /* ChargingStation.swift */,
+				F6547EC92E3D1EE10056DD59 /* Route.swift */,
+				F6547ECA2E3D1EE10056DD59 /* User.swift */,
+				F6547ECB2E3D1EE10056DD59 /* Vehicle.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F6547ED12E3D1EE10056DD59 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F66A0E1C2E3D9DEB00036D2D /* SimpleLocationManager.swift */,
+				F6C5DD372E3D93B100E27CB6 /* LocationManager.swift */,
+				F6C5DD382E3D93B100E27CB6 /* RouteStorageManager.swift */,
+				F6C5DD312E3D8F1100E27CB6 /* MockRouteService.swift */,
+				F6C5DD322E3D8F1100E27CB6 /* RouteService.swift */,
+				F6C5DD212E3D857100E27CB6 /* VehicleManager.swift */,
+				F6547ECD2E3D1EE10056DD59 /* AuthManager.swift */,
+				F6547ECE2E3D1EE10056DD59 /* Endpoints.swift */,
+				F6547ECF2E3D1EE10056DD59 /* MockAuthService.swift */,
+				F6547ED02E3D1EE10056DD59 /* NetworkService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		F6547ED22E3D1EE10056DD59 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				F6C5DD3B2E3D93D700E27CB6 /* PolylineDecoder.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		F6547ED32E3D1EE10056DD59 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				F6547EC72E3D1EE10056DD59 /* Extensions */,
+				F6547ECC2E3D1EE10056DD59 /* Models */,
+				F6547ED12E3D1EE10056DD59 /* Services */,
+				F6547ED22E3D1EE10056DD59 /* Utilities */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		F6547ED42E3D1EE10056DD59 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		F6547ED52E3D1EE10056DD59 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F6C5DD232E3D86AA00E27CB6 /* VehicleSelectionView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F6547ED62E3D1EE10056DD59 /* ChargingStations */ = {
+			isa = PBXGroup;
+			children = (
+				F6547ED42E3D1EE10056DD59 /* ViewModels */,
+				F6547ED52E3D1EE10056DD59 /* Views */,
+			);
+			path = ChargingStations;
+			sourceTree = "<group>";
+		};
+		F6547ED82E3D1EE10056DD59 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				F6547ED72E3D1EE10056DD59 /* HomeViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		F6547EDD2E3D1EE10056DD59 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F66A0E1E2E3D9EF300036D2D /* SimpleAuthenticationView.swift */,
+				F6C5DD452E3D975800E27CB6 /* RouteHistoryView.swift */,
+				F6547ED92E3D1EE10056DD59 /* AuthenticationView.swift */,
+				F6547EDA2E3D1EE10056DD59 /* HomeView.swift */,
+				F6547EDB2E3D1EE10056DD59 /* MainTabView.swift */,
+				F6547EDC2E3D1EE10056DD59 /* StationDetailView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F6547EDE2E3D1EE10056DD59 /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				F6547ED82E3D1EE10056DD59 /* ViewModels */,
+				F6547EDD2E3D1EE10056DD59 /* Views */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		F6547EDF2E3D1EE10056DD59 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		F6547EE02E3D1EE10056DD59 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F6547EE12E3D1EE10056DD59 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				F6547EDF2E3D1EE10056DD59 /* ViewModels */,
+				F6547EE02E3D1EE10056DD59 /* Views */,
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		F6547EE22E3D1EE10056DD59 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				F6C5DD2E2E3D89D500E27CB6 /* RoutePlanningViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		F6547EE32E3D1EE10056DD59 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F6C5DD3F2E3D950800E27CB6 /* RouteAmenityChip.swift */,
+				F6C5DD402E3D950800E27CB6 /* RouteMapView.swift */,
+				F6C5DD412E3D950800E27CB6 /* RouteResultsView.swift */,
+				F6C5DD3D2E3D94E800E27CB6 /* LocationSearchField.swift */,
+				F6C5DD252E3D891400E27CB6 /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F6547EE42E3D1EE10056DD59 /* RouteDetails */ = {
+			isa = PBXGroup;
+			children = (
+				F6547EE22E3D1EE10056DD59 /* ViewModels */,
+				F6547EE32E3D1EE10056DD59 /* Views */,
+			);
+			path = RouteDetails;
+			sourceTree = "<group>";
+		};
+		F6547EE52E3D1EE10056DD59 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				F6547ED62E3D1EE10056DD59 /* ChargingStations */,
+				F6547EDE2E3D1EE10056DD59 /* Home */,
+				F6547EE12E3D1EE10056DD59 /* Profile */,
+				F6547EE42E3D1EE10056DD59 /* RouteDetails */,
+					F6D0B0002E4A0A0000AA00AA /* Nearby */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+			F6D0B0002E4A0A0000AA00AA /* Nearby */ = {
+				isa = PBXGroup;
+				children = (
+					F6D0B0072E4A0A0000AA00AA /* ViewModels */,
+					F6D0B0082E4A0A0000AA00AA /* Views */,
+					F6D0B0092E4A0A0000AA00AA /* Services */,
+				);
+				path = Nearby;
+				sourceTree = "<group>";
+			};
+			F6D0B0072E4A0A0000AA00AA /* ViewModels */ = {
+				isa = PBXGroup;
+				children = (
+					F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */,
+				);
+				path = ViewModels;
+				sourceTree = "<group>";
+			};
+			F6D0B0082E4A0A0000AA00AA /* Views */ = {
+				isa = PBXGroup;
+				children = (
+					F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */,
+				);
+				path = Views;
+				sourceTree = "<group>";
+			};
+			F6D0B0092E4A0A0000AA00AA /* Services */ = {
+				isa = PBXGroup;
+				children = (
+					F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */,
+				);
+				path = Services;
+				sourceTree = "<group>";
+			};
+		F6547EE72E3D1EE10056DD59 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F6547EE62E3D1EE10056DD59 /* ModelTests.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		F6547EE92E3D1EE10056DD59 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F6547EE82E3D1EE10056DD59 /* NetworkServiceTests.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		F6547EEB2E3D1EE10056DD59 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				F6547EEA2E3D1EE10056DD59 /* HomeViewModelTests.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		F6547EEC2E3D1EE10056DD59 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				F6547EE72E3D1EE10056DD59 /* Models */,
+				F6547EE92E3D1EE10056DD59 /* Services */,
+				F6547EEB2E3D1EE10056DD59 /* ViewModels */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		F6C5DD252E3D891400E27CB6 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F6C5DD262E3D89A200E27CB6 /* AmenityChip.swift */,
+				F6C5DD272E3D89A200E27CB6 /* BatterySlider.swift */,
+				F6C5DD282E3D89A200E27CB6 /* LocationSearchField.swift */,
+				F6C5DD292E3D89A200E27CB6 /* RoutePlanningView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F6547E2F2E3CFD020056DD59 /* EVRouteSwiftUI */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F6547E3B2E3CFD030056DD59 /* Build configuration list for PBXNativeTarget "EVRouteSwiftUI" */;
+			buildPhases = (
+				F6547E2C2E3CFD020056DD59 /* Sources */,
+				F6547E2D2E3CFD020056DD59 /* Frameworks */,
+				F6547E2E2E3CFD020056DD59 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = EVRouteSwiftUI;
+			packageProductDependencies = (
+			);
+			productName = EVRouteSwiftUI;
+			productReference = F6547E302E3CFD020056DD59 /* EVRouteSwiftUI.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F6547E782E3D05B60056DD59 /* EVRouteSwiftUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F6547E7F2E3D05B60056DD59 /* Build configuration list for PBXNativeTarget "EVRouteSwiftUITests" */;
+			buildPhases = (
+				F6547E752E3D05B60056DD59 /* Sources */,
+				F6547E762E3D05B60056DD59 /* Frameworks */,
+				F6547E772E3D05B60056DD59 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F6547E7E2E3D05B60056DD59 /* PBXTargetDependency */,
+			);
+			name = EVRouteSwiftUITests;
+			packageProductDependencies = (
+			);
+			productName = EVRouteSwiftUITests;
+			productReference = F6547E792E3D05B60056DD59 /* EVRouteSwiftUITests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F6547E282E3CFD020056DD59 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					F6547E2F2E3CFD020056DD59 = {
+						CreatedOnToolsVersion = 26.0;
+					};
+					F6547E782E3D05B60056DD59 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = F6547E2F2E3CFD020056DD59;
+					};
+				};
+			};
+			buildConfigurationList = F6547E2B2E3CFD020056DD59 /* Build configuration list for PBXProject "EVRouteSwiftUI" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F6547E272E3CFD020056DD59;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F6547E312E3CFD020056DD59 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F6547E2F2E3CFD020056DD59 /* EVRouteSwiftUI */,
+				F6547E782E3D05B60056DD59 /* EVRouteSwiftUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F6547E2E2E3CFD020056DD59 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F6547EFF2E3D1F6A0056DD59 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6547E772E3D05B60056DD59 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F6547E2C2E3CFD020056DD59 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+					F6D0B0032E4A0A0000AA00AA /* NearbyView.swift in Sources */,
+				F6C5DD332E3D8F1100E27CB6 /* RouteService.swift in Sources */,
+				F6C5DD342E3D8F1100E27CB6 /* MockRouteService.swift in Sources */,
+				F6547EED2E3D1EE10056DD59 /* HomeViewModel.swift in Sources */,
+				F6C5DD2F2E3D89D500E27CB6 /* RoutePlanningViewModel.swift in Sources */,
+				F6547EEE2E3D1EE10056DD59 /* HomeView.swift in Sources */,
+				F6C5DD2A2E3D89A200E27CB6 /* BatterySlider.swift in Sources */,
+				F6C5DD2B2E3D89A200E27CB6 /* LocationSearchField.swift in Sources */,
+				F6C5DD422E3D950800E27CB6 /* RouteMapView.swift in Sources */,
+				F6C5DD432E3D950800E27CB6 /* RouteAmenityChip.swift in Sources */,
+				F6C5DD442E3D950800E27CB6 /* RouteResultsView.swift in Sources */,
+				F6C5DD2D2E3D89A200E27CB6 /* RoutePlanningView.swift in Sources */,
+				F6C5DD222E3D857100E27CB6 /* VehicleManager.swift in Sources */,
+				F6C5DD462E3D975800E27CB6 /* RouteHistoryView.swift in Sources */,
+				F6547EEF2E3D1EE10056DD59 /* Endpoints.swift in Sources */,
+				F6547EF02E3D1EE10056DD59 /* NetworkService.swift in Sources */,
+				F6547EF12E3D1EE10056DD59 /* StationDetailView.swift in Sources */,
+					F6D0B0022E4A0A0000AA00AA /* NearbyViewModel.swift in Sources */,
+				F66A0E1D2E3D9DEB00036D2D /* SimpleLocationManager.swift in Sources */,
+				F6C5DD242E3D86AA00E27CB6 /* VehicleSelectionView.swift in Sources */,
+				F6547EF22E3D1EE10056DD59 /* EVRouteApp.swift in Sources */,
+				F6547EF32E3D1EE10056DD59 /* User.swift in Sources */,
+				F6547EF52E3D1EE10056DD59 /* Vehicle.swift in Sources */,
+				F6547EF62E3D1EE10056DD59 /* AuthManager.swift in Sources */,
+				F6547EF72E3D1EE10056DD59 /* MockAuthService.swift in Sources */,
+				F6547EF82E3D1EE10056DD59 /* AuthenticationView.swift in Sources */,
+				F6547EFA2E3D1EE10056DD59 /* MainTabView.swift in Sources */,
+				F6C5DD392E3D93B100E27CB6 /* LocationManager.swift in Sources */,
+				F6C5DD3A2E3D93B100E27CB6 /* RouteStorageManager.swift in Sources */,
+				F6C5DD362E3D933D00E27CB6 /* SavedRoute.swift in Sources */,
+				F6547EFB2E3D1EE10056DD59 /* ChargingStation.swift in Sources */,
+				F6547EFC2E3D1EE10056DD59 /* Route.swift in Sources */,
+				F66A0E1F2E3D9EF300036D2D /* SimpleAuthenticationView.swift in Sources */,
+				F6C5DD3C2E3D93D700E27CB6 /* PolylineDecoder.swift in Sources */,
+					F6D0B0012E4A0A0000AA00AA /* NearbyStationsService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6547E752E3D05B60056DD59 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F6547F022E3D200B0056DD59 /* ModelTests.swift in Sources */,
+				F6547F012E3D20050056DD59 /* NetworkServiceTests.swift in Sources */,
+				F6547F002E3D1FFF0056DD59 /* HomeViewModelTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F6547E7E2E3D05B60056DD59 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F6547E2F2E3CFD020056DD59 /* EVRouteSwiftUI */;
+			targetProxy = F6547E7D2E3D05B60056DD59 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F6547E392E3CFD030056DD59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = QL4VY8GAJ8;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		F6547E3A2E3CFD030056DD59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = QL4VY8GAJ8;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F6547E3C2E3CFD030056DD59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QL4VY8GAJ8;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "EV Route needs your location to find nearby charging stations and plan routes.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_LSApplicationQueriesSchemes = (
+					comgooglemaps,
+				);
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.abhijeetshelke.EVRouteSwiftUI.EVRouteSwiftUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F6547E3D2E3CFD030056DD59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QL4VY8GAJ8;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "EV Route needs your location to find nearby charging stations and plan routes.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_LSApplicationQueriesSchemes = (
+					comgooglemaps,
+				);
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.abhijeetshelke.EVRouteSwiftUI.EVRouteSwiftUI;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F6547E802E3D05B60056DD59 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QL4VY8GAJ8;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.abhijeetshelke.EVRouteSwiftUI.EVRouteSwiftUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EVRouteSwiftUI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EVRouteSwiftUI";
+			};
+			name = Debug;
+		};
+		F6547E812E3D05B60056DD59 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = QL4VY8GAJ8;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.abhijeetshelke.EVRouteSwiftUI.EVRouteSwiftUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/EVRouteSwiftUI.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EVRouteSwiftUI";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F6547E2B2E3CFD020056DD59 /* Build configuration list for PBXProject "EVRouteSwiftUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F6547E392E3CFD030056DD59 /* Debug */,
+				F6547E3A2E3CFD030056DD59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F6547E3B2E3CFD030056DD59 /* Build configuration list for PBXNativeTarget "EVRouteSwiftUI" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F6547E3C2E3CFD030056DD59 /* Debug */,
+				F6547E3D2E3CFD030056DD59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F6547E7F2E3D05B60056DD59 /* Build configuration list for PBXNativeTarget "EVRouteSwiftUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F6547E802E3D05B60056DD59 /* Debug */,
+				F6547E812E3D05B60056DD59 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F6547E282E3CFD020056DD59 /* Project object */;
+}

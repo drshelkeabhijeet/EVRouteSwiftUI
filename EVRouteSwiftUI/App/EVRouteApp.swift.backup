@@ -1,0 +1,27 @@
+import SwiftUI
+import CoreLocation
+
+@main
+struct EVRouteApp: App {
+    @StateObject private var authManager = AuthManager.shared
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(authManager)
+                .preferredColorScheme(.none) // Respect system setting
+        }
+    }
+}
+
+struct ContentView: View {
+    @EnvironmentObject var authManager: AuthManager
+    
+    var body: some View {
+        if authManager.isAuthenticated {
+            MainTabView()
+        } else {
+            SimpleAuthenticationView()
+        }
+    }
+}

@@ -1,0 +1,530 @@
+{
+  "name": "NearbyStations",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "545c8277-554b-460d-89c5-5785fb99c782",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1-webhook",
+      "name": "Nearby Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        300
+      ],
+      "webhookId": "545c8277-554b-460d-89c5-5785fb99c782"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || {};\nconst lat = Number(body.latitude);\nconst lng = Number(body.longitude);\nconst radius_km = Number(body.radius_km || 15);\nif (!Number.isFinite(lat) || !Number.isFinite(lng)) { throw new Error('latitude/longitude required'); }\n// Round to ~0.1 degree (~9\u201311 km buckets depending on latitude)\nconst round1 = v => Math.trunc(v * 10) / 10;\nconst latR = round1(lat);\nconst lngR = round1(lng);\nconst cacheId = `${latR}_${lngR}`;\nreturn [{ json: { lat, lng, radius_km, latR, lngR, cacheId } }];"
+      },
+      "id": "a2-normalize",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, payload, best_station_id, expires_at FROM public.station_cache WHERE id = $1 AND expires_at > NOW() LIMIT 1;",
+        "options": {
+          "queryReplacement": "={{[$json.cacheId]}}"
+        }
+      },
+      "id": "a3-cache-select",
+      "name": "Check Cache",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -460,
+        300
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.payload }}",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4-has-cache",
+      "name": "Has Cached?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Score stations from cache based on current request location\nconst norm = $node['Normalize Input'].json;\nconst origin = { lat: norm.lat, lng: norm.lng };\nconst R = norm.radius_km;\nlet payload = $json.payload;\nif (typeof payload === 'string') { try { payload = JSON.parse(payload); } catch(e){} }\nlet stations = Array.isArray(payload) ? payload : (payload && Array.isArray(payload.stations) ? payload.stations : []);\nconst toRad = d => d*Math.PI/180;\nconst distKm = (a,b) => { const dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng); const s=Math.sin; const c=Math.cos; const A= s(dLat/2)**2 + c(toRad(a.lat))*c(toRad(b.lat))*s(dLng/2)**2; return 2*6371*Math.asin(Math.min(1, Math.sqrt(A))); };\nconst maxSpeed = Math.max(1, ...stations.map(s => s.charging_speed_kw || 0));\nstations = stations.map(s=>{ const sLat = s.location?.latitude ?? 0; const sLng = s.location?.longitude ?? 0; const distance_km = distKm(origin, {lat:sLat,lng:sLng}); const speedNorm = Math.max(0, (s.charging_speed_kw || 0)/maxSpeed); const availNorm = s.availability==null ? 0.5 : Math.max(0, Math.min(1, s.availability)); const proxNorm = Math.max(0, Math.min(1, 1 - (distance_km / R))); const score = 0.6*speedNorm + 0.25*availNorm + 0.15*proxNorm; return { ...s, distance_km, score }; });\nlet bestIdx = stations.length ? stations.reduce((bi,s,i,arr)=> s.score>arr[bi].score?i:bi, 0) : -1;\nstations = stations.map((s,i)=> ({ ...s, is_selected: i===bestIdx }));\nreturn [{ json: { stations } }];"
+      },
+      "id": "a5-return-cached",
+      "name": "Score From Cache",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://maps.googleapis.com/maps/api/place/nearbysearch/json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "location",
+              "value": "={{$node[\"Normalize Input\"].json.lat}},{{$node[\"Normalize Input\"].json.lng}}"
+            },
+            {
+              "name": "radius",
+              "value": "={{$node[\"Normalize Input\"].json.radius_km * 1000}}"
+            },
+            {
+              "name": "type",
+              "value": "electric_vehicle_charging_station"
+            },
+            {
+              "name": "key",
+              "value": "REPLACE_WITH_YOUR_GOOGLE_PLACES_API_KEY"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "a6-google-places",
+      "name": "Google Places Nearby",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        -20,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const latR = $node['Normalize Input'].json.latR;\nconst lngR = $node['Normalize Input'].json.lngR;\nconst cacheId = $node['Normalize Input'].json.cacheId;\nconst res = $json || {};\nconst results = res.results || [];\nfunction inferSpeed(name=''){ const n=name.toLowerCase(); if(n.includes('supercharger')) return 250; if(n.includes('electrify america')) return 150; return null; }\nlet stations = results.map(r=>{ const sLat=r.geometry?.location?.lat ?? 0; const sLng=r.geometry?.location?.lng ?? 0; const speed = inferSpeed(r.name); return { place_id: r.place_id || null, station_name: r.name || '', address: r.vicinity || r.formatted_address || '', location: { latitude: sLat, longitude: sLng }, charging_speed_kw: speed, availability: null, rating: r.rating ?? null, user_rating_count: r.user_ratings_total ?? null, business_status: r.business_status ?? null }; });\nreturn [{ json: { stations, latR, lngR, cacheId } }];"
+      },
+      "id": "a7-transform",
+      "name": "Transform Raw Stations",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        200,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.station_cache (id, lat_rounded, lng_rounded, radius_km, payload, best_station_id, expires_at)\nVALUES ($1, $2, $3, $4, $5, $6, NOW() + interval '3 hours')\nON CONFLICT (id) DO UPDATE\n  SET payload = EXCLUDED.payload,\n      best_station_id = EXCLUDED.best_station_id,\n      radius_km = EXCLUDED.radius_km,\n      expires_at = EXCLUDED.expires_at;\n",
+        "options": {
+          "queryReplacement": "={{[$json.cacheId, $json.latR, $json.lngR, $node['Normalize Input'].json.radius_km, $json.stations, null]}}"
+        }
+      },
+      "id": "a8-cache-upsert",
+      "name": "Upsert Cache",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        420,
+        420
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Score raw stations just saved using current request location\nconst norm = $node['Normalize Input'].json;\nconst origin = { lat: norm.lat, lng: norm.lng };\nconst R = norm.radius_km;\nlet stations = $node['Transform Raw Stations'].json.stations || [];\nconst toRad = d => d*Math.PI/180;\nconst distKm = (a,b) => { const dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng); const s=Math.sin; const c=Math.cos; const A= s(dLat/2)**2 + c(toRad(a.lat))*c(toRad(b.lat))*s(dLng/2)**2; return 2*6371*Math.asin(Math.min(1, Math.sqrt(A))); };\nconst maxSpeed = Math.max(1, ...stations.map(s => s.charging_speed_kw || 0));\nstations = stations.map(s=>{ const sLat = s.location?.latitude ?? 0; const sLng = s.location?.longitude ?? 0; const distance_km = distKm(origin, {lat:sLat,lng:sLng}); const speedNorm = Math.max(0, (s.charging_speed_kw || 0)/maxSpeed); const availNorm = s.availability==null ? 0.5 : Math.max(0, Math.min(1, s.availability)); const proxNorm = Math.max(0, Math.min(1, 1 - (distance_km / R))); const score = 0.6*speedNorm + 0.25*availNorm + 0.15*proxNorm; return { ...s, distance_km, score }; });\nlet bestIdx = stations.length ? stations.reduce((bi,s,i,arr)=> s.score>arr[bi].score?i:bi, 0) : -1;\nstations = stations.map((s,i)=> ({ ...s, is_selected: i===bestIdx }));\nreturn [{ json: { stations } }];"
+      },
+      "id": "a10-score-fresh",
+      "name": "Score Fresh",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const stations=$node['Score From Cache'].json.stations||[]; const best=stations.find(s=>s.is_selected); return [{json:{stations, best_place_id: best? best.place_id: null}}];"
+      },
+      "id": "a11-extract-best-cached",
+      "name": "Extract Best (Cached)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://maps.googleapis.com/maps/api/place/details/json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "place_id",
+              "value": "={{$node['Extract Best (Cached)'].json.best_place_id}}"
+            },
+            {
+              "name": "fields",
+              "value": "place_id,name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,business_status,opening_hours,geometry,address_components"
+            },
+            {
+              "name": "key",
+              "value": "REPLACE_WITH_YOUR_GOOGLE_PLACES_API_KEY"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "a12-details-cached",
+      "name": "Place Details (Cached)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        380,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.station_cache SET best_station_id=$2 WHERE id=$1;",
+        "options": {
+          "queryReplacement": "={{[$node['Normalize Input'].json.cacheId, $node['Extract Best (Cached)'].json.best_place_id]}}"
+        }
+      },
+      "id": "a13-update-best-cached",
+      "name": "Update Best (Cached)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        600,
+        180
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{stations:$node['Score From Cache'].json.stations || [], selected_station: ($json.result||{})}}];"
+      },
+      "id": "a14-build-response-cached",
+      "name": "Build Response (Cached)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const stations=$node['Score Fresh'].json.stations||[]; const best=stations.find(s=>s.is_selected); return [{json:{stations, best_place_id: best? best.place_id: null}}];"
+      },
+      "id": "a21-extract-best-fresh",
+      "name": "Extract Best (Fresh)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://maps.googleapis.com/maps/api/place/details/json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "place_id",
+              "value": "={{$node['Extract Best (Fresh)'].json.best_place_id}}"
+            },
+            {
+              "name": "fields",
+              "value": "place_id,name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,business_status,opening_hours,geometry,address_components"
+            },
+            {
+              "name": "key",
+              "value": "REPLACE_WITH_YOUR_GOOGLE_PLACES_API_KEY"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "a22-details-fresh",
+      "name": "Place Details (Fresh)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE public.station_cache SET best_station_id=$2 WHERE id=$1;",
+        "options": {
+          "queryReplacement": "={{[$node['Normalize Input'].json.cacheId, $node['Extract Best (Fresh)'].json.best_place_id]}}"
+        }
+      },
+      "id": "a23-update-best-fresh",
+      "name": "Update Best (Fresh)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1260,
+        420
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "REPLACE_WITH_YOUR_POSTGRES_CREDENTIAL_ID",
+          "name": "Supabase Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{stations:$node['Score Fresh'].json.stations || [], selected_station: ($json.result||{})}}];"
+      },
+      "id": "a24-build-response-fresh",
+      "name": "Build Response (Fresh)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Nearby Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Check Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Cache": {
+      "main": [
+        [
+          {
+            "node": "Has Cached?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Cached?": {
+      "main": [
+        [
+          {
+            "node": "Score From Cache",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Google Places Nearby",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Places Nearby": {
+      "main": [
+        [
+          {
+            "node": "Transform Raw Stations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Raw Stations": {
+      "main": [
+        [
+          {
+            "node": "Upsert Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Cache": {
+      "main": [
+        [
+          {
+            "node": "Score Fresh",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score From Cache": {
+      "main": [
+        [
+          {
+            "node": "Extract Best (Cached)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Best (Cached)": {
+      "main": [
+        [
+          {
+            "node": "Place Details (Cached)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Place Details (Cached)": {
+      "main": [
+        [
+          {
+            "node": "Update Best (Cached)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Best (Cached)": {
+      "main": [
+        [
+          {
+            "node": "Build Response (Cached)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Fresh": {
+      "main": [
+        [
+          {
+            "node": "Extract Best (Fresh)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Best (Fresh)": {
+      "main": [
+        [
+          {
+            "node": "Place Details (Fresh)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Place Details (Fresh)": {
+      "main": [
+        [
+          {
+            "node": "Update Best (Fresh)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Best (Fresh)": {
+      "main": [
+        [
+          {
+            "node": "Build Response (Fresh)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,1198 @@
+{
+  "name": "EVAstarFF2",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "5c5cf1c2-edab-404e-8637-8e3c4a572f9d",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "6303e627-a0c8-4fd7-aa44-87be645d7f04",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        1408
+      ],
+      "webhookId": "5c5cf1c2-edab-404e-8637-8e3c4a572f9d"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Load user preferences if user_email provided\n  const webhookData = $json.body;\n  const userEmail = webhookData.user_email;\n\n  // Pass through webhook data with preferences placeholder\n  return [{\n    json: {\n      ...webhookData,\n      user_preferences: {\n        user_email: userEmail || null,\n        favorite_networks: [],\n        preferred_amenities: webhookData.amenity_preferences || [],\n        preferred_charging_level: webhookData.preferred_charging_level || 80,\n        typical_charging_soc: null\n      }\n    }\n  }];"
+      },
+      "id": "0658c7b8-045e-482f-b90a-a26e0dd0e518",
+      "name": "Load User Preferences",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  route_id, origin, destination, polyline, distance_km, duration_minutes, expires_at\nFROM public.route_cache\nWHERE origin = $1\n  AND destination = $2\n  AND expires_at > NOW()\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{[$json.origin, $json.destination]}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -352,
+        1408
+      ],
+      "id": "4176b6a0-78c2-483a-aa91-7bf5ed597e7b",
+      "name": "Route Cache Check",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0c88db79-a62a-4e6d-8f4d-77b0628f9c10",
+              "leftValue": "={{ $json.polyline }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -128,
+        1408
+      ],
+      "id": "484582e7-117a-4049-a259-067aa27a3b25",
+      "name": "Route Cache Empty?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://routes.googleapis.com/directions/v2:computeRoutes",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Goog-FieldMask",
+              "value": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"origin\": {\n    \"location\": {\n      \"latLng\": {\n        \"latitude\": {{$node[\"Webhook Trigger\"].json.body.origin.split(',')[0]}},\n        \"longitude\": {{$node[\"Webhook Trigger\"].json.body.origin.split(',')[1]}}\n      }\n    }\n  },\n  \"destination\": {\n    \"location\": {\n      \"latLng\": {\n        \"latitude\": {{$node[\"Webhook Trigger\"].json.body.destination.split(',')[0]}},\n        \"longitude\": {{$node[\"Webhook Trigger\"].json.body.destination.split(',')[1]}}\n      }\n    }\n  },\n  \"travelMode\": \"DRIVE\"\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "804754da-c0af-4b20-9db3-4916f77eddd7",
+      "name": "Google Routes API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        112,
+        1520
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5dc8hm4J2AbJsrEu",
+          "name": "Google Maps"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the input data from whichever path we came from\n  const inputData = $input.first().json;\n\n  // Check if this is Google Routes API data (has 'routes' field)\n  if (inputData.routes && inputData.routes[0]) {\n    const route = inputData.routes[0];\n    const webhookData = $('Webhook Trigger').first().json.body;\n\n    return [{\n      json: {\n        polyline: route.polyline.encodedPolyline,\n        distance_km: route.distanceMeters / 1000,\n        duration_minutes: Math.round(parseInt(route.duration.replace('s', '')) / 60),\n        from_cache: false,\n        origin: webhookData.origin,\n        destination: webhookData.destination\n      }\n    }];\n  }\n  // Otherwise it's cached data - it already has all the fields\n  else if (inputData.polyline) {\n    return [{\n      json: {\n        polyline: inputData.polyline,\n        distance_km: inputData.distance_km,\n        duration_minutes: inputData.duration_minutes,\n        from_cache: true,\n        origin: inputData.origin,\n        destination: inputData.destination\n      }\n    }];\n  }\n  // Fallback error\n  else {\n    throw new Error('Invalid input data structure');\n  }"
+      },
+      "id": "0b33d9c9-b2c4-42f7-89fc-4aed8cd600ad",
+      "name": "Merge Route Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        320,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO public.route_cache (\n  route_id,\n  origin,\n  destination,\n  polyline,\n  distance_km,\n  duration_minutes,\n  expires_at\n) VALUES (\n  '{{$json.route_id}}',\n  '{{$json.origin}}',\n  '{{$json.destination}}',\n  '{{$json.polyline}}',\n  {{$json.distance_km}},\n  {{$json.duration_minutes}},\n  NOW() + INTERVAL '7 days'\n)\nON CONFLICT (route_id) DO UPDATE SET\n  polyline         = EXCLUDED.polyline,\n  distance_km      = EXCLUDED.distance_km,\n  duration_minutes = EXCLUDED.duration_minutes,\n  expires_at       = NOW() + INTERVAL '7 days';\n",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        976,
+        1328
+      ],
+      "id": "3cb5b9c8-02c9-4d62-aeac-2804e749c9fb",
+      "name": "Save Route",
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// SOC Calculator (robust)\nvar energy_per_km = 0.2; // kWh/km average consumption\nvar rb = $('Webhook Trigger').first().json.body || {};\nvar inp = ($input.first && $input.first().json) ? $input.first().json : ($input.item ? $input.item.json : {}) || {};\n\n// Normalize numbers from either snake_case or mixed case\nfunction num(x, d) {\n  var n = Number(x);\n  return isFinite(n) ? n : (d != null ? Number(d) : 0);\n}\nfunction pick() {\n  for (var i = 0; i < arguments.length; i++) {\n    var v = arguments[i];\n    if (v !== undefined && v !== null && v !== '') return v;\n  }\n  return undefined;\n}\n\nvar current_soc = num(pick(rb.current_soc, rb.current_SOC), 0);\nvar battery_capacity_kwh = num(pick(rb.battery_capacity_kwh, rb.battery_capacity_kWh), 0);\nvar min_soc = num(pick(rb.min_soc, rb.min_SOC), 0);\nvar preferred_charging_level = num(pick(rb.preferred_charging_level, rb.target_soc), 80);\n\nvar distance_km = num(inp.distance_km, 0);\nvar polyline = inp.polyline;\nvar duration_minutes = inp.duration_minutes;\nvar origin = inp.origin;\nvar destination = inp.destination;\n\nvar trip_energy_needed = distance_km * energy_per_km;\nvar current_energy = (current_soc / 100) * battery_capacity_kwh;\nvar arrival_energy = current_energy - trip_energy_needed;\nvar arrival_soc_calc = battery_capacity_kwh > 0 ? Math.round((arrival_energy / battery_capacity_kwh) * 100) : 0;\nif (!isFinite(arrival_soc_calc)) arrival_soc_calc = 0;\nvar needs_charging = arrival_soc_calc < min_soc;\n\nreturn [{\n  json: {\n    polyline: polyline,\n    distance_km: distance_km,\n    duration_minutes: duration_minutes,\n    origin: origin,\n    destination: destination,\n    needs_charging: needs_charging,\n    arrival_SOC: arrival_soc_calc,\n    trip_energy_needed: trip_energy_needed,\n    preferred_charging_level: preferred_charging_level,\n    // Provide both casings so downstream nodes are happy\n    current_SOC: current_soc,\n    current_soc: current_soc,\n    battery_capacity_kWh: battery_capacity_kwh,\n    battery_capacity_kwh: battery_capacity_kwh,\n    min_SOC: min_soc,\n    min_soc: min_soc,\n    amenity_preferences: rb.amenity_preferences || []\n  }\n}];"
+      },
+      "id": "f32322be-a031-4a27-bf79-b46ad8814e83",
+      "name": "SOC Calculator",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        544,
+        1504
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const inp = $input.first().json || {};\nconst req = $('Webhook Trigger').first().json.body || {};\n\nfunction parseCoord(val) {\n  if (typeof val === 'string') {\n    const parts = val.split(',');\n    const a = Number((parts[0] || '').trim());\n    const b = Number((parts[1] || '').trim());\n    if (Number.isFinite(a) && Number.isFinite(b)) return { lat: a, lng: b };\n  } else if (val && typeof val === 'object') {\n    const lat = Number(val.lat != null ? val.lat : val.latitude);\n    const lng = Number(val.lng != null ? val.lng : val.longitude);\n    if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };\n  }\n  throw new Error('origin/destination must be \"lat,lng\" or object with lat/lng')\n;\n}\n\nfunction trunc3Pad(n) {\n  const t = Math.trunc(Number(n) * 1000) / 1000;\n  return t.toFixed(3);\n}\n\nfunction firstDefined() {\n  for (let i = 0; i < arguments.length; i++) {\n    const v = arguments[i];\n    if (v !== undefined && v !== null && v !== '') return v;\n  }\n  return undefined;\n}\n\nconst o = parseCoord(inp.origin);\nconst d = parseCoord(inp.destination);\n\nconst otLat = trunc3Pad(o.lat);\nconst otLng = trunc3Pad(o.lng);\nconst dtLat = trunc3Pad(d.lat);\nconst dtLng = trunc3Pad(d.lng);\n\nconst route_id = [otLat, otLng, dtLat, dtLng].join('_');\n\nconst battery_capacity_kwh = Number(firstDefined(\n  inp.battery_capacity_kWh, inp.battery_capacity_kwh,\n  req.battery_capacity_kwh, req.battery_capacity_kWh\n));\n\nconst preferred_charging_level = Number(firstDefined(\n  inp.preferred_charging_level, req.preferred_charging_level, req.target_soc, 80\n));\n\nconst current_soc = Number(firstDefined(\n  inp.current_SOC, inp.current_soc, req.current_soc, req.current_SOC\n));\n\nconst route_selected_stations_id = [\n  route_id,\n  isNaN(battery_capacity_kwh) ? '' : String(battery_capacity_kwh),\n  isNaN(preferred_charging_level) ? '80' : String(preferred_charging_level),\n  isNaN(current_soc) ? '' : String(current_soc)\n].join('_');\n\nconst out = Object.assign({}, inp, {\n  route_id: route_id,\n  origin_trunc: { lat: otLat, lng: otLng },\n  destination_trunc: { lat: dtLat, lng: dtLng },\n  battery_capacity_kwh: battery_capacity_kwh,\n  preferred_charging_level: preferred_charging_level,\n  current_soc: current_soc,\n  route_selected_stations_id: route_selected_stations_id\n});\n\nreturn [{ json: out }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        1504
+      ],
+      "id": "a01a16e2-7e6f-4f3f-85bb-a3d42c6e0a5e",
+      "name": "Generate Cache Key"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  route_selected_stations_id,\n  route_id,\n  stations::text AS stations,\n  total_charging_time,\n  total_detour_km,\n  total_energy_added,\n  created_at,\n  expires_at\nFROM public.selected_stations_cache\nWHERE route_selected_stations_id = $1\n  AND expires_at > NOW()\nLIMIT 1;\n",
+        "options": {
+          "queryReplacement": "={{ [ $json.route_selected_stations_id ] }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        960,
+        1504
+      ],
+      "id": "18025bd8-3f21-428a-bc87-61d1aea17c07",
+      "name": "Check Selected Stations Cache",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "96e52a52-37d7-4a84-8d14-eeda7089ebef",
+              "leftValue": "={{ $json.stations }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        1504
+      ],
+      "id": "85d3032a-89e4-43ec-bfc5-c593ca1fa844",
+      "name": "Selected Stations Cached?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use the canonical route_id from Generate Cache Key\nconst gck = $node[\"Generate Cache Key\"].json;\nconst soc = $node[\"SOC Calculator\"].json;\n\nreturn [{\n  json: {\n    route_id: gck.route_id,\n    origin: soc.origin,\n    destination: soc.destination\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        1504
+      ],
+      "id": "300fa1cf-df38-4555-bc3f-60f4d690a7ff",
+      "name": "Route Stations Cache Check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e39391d0-6b2e-4959-a730-d2cb5edf72c8",
+              "leftValue": "={{$json.station_count}}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2160,
+        1504
+      ],
+      "id": "93e78de4-65f6-400e-ba24-bbf919cfb724",
+      "name": "Has Cached Route?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n      COUNT(*) as station_count,\n      STRING_AGG(segment_key, ',') as cache_keys,\n      MAX(expires_at) as latest_expiry,\n      route_id\n  FROM segment_station_cache\n  WHERE route_id = $1\n      AND expires_at > NOW()\n  GROUP BY route_id",
+        "options": {
+          "queryReplacement": "={{[$json.route_id]}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2000,
+        1504
+      ],
+      "id": "d5e0a3ef-0de2-4f66-9c83-d3bc88c1146c",
+      "name": "Check Route Cache",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decode Google polyline to coordinates with distance tracking\nfunction decodePolyline(encoded) {\n    const points = [];\n    let index = 0, lat = 0, lng = 0;\n\n    try {\n      while (index < encoded.length) {\n        let shift = 0, result = 0, byte;\n        do {\n          byte = encoded.charCodeAt(index++) - 63;\n          result |= (byte & 0x1f) << shift;\n          shift += 5;\n        } while (byte >= 0x20);\n\n        const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));\n        lat += dlat;\n\n        shift = 0; result = 0;\n        do {\n          byte = encoded.charCodeAt(index++) - 63;\n          result |= (byte & 0x1f) << shift;\n          shift += 5;\n        } while (byte >= 0x20);\n\n        const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));\n        lng += dlng;\n\n        points.push([lat / 1e5, lng / 1e5]);\n      }\n    } catch (error) {\n      throw new Error(`Failed to decode polyline: ${error.message}`);\n    }\n\n    if (points.length < 2) {\n      throw new Error('Decoded polyline has insufficient points');\n    }\n\n    return points;\n  }\n\n  // Calculate distance between two points\n  function haversineDistance(p1, p2) {\n    const R = 6371; // Earth radius in km\n    const dLat = (p2[0] - p1[0]) * Math.PI / 180;\n    const dLon = (p2[1] - p1[1]) * Math.PI / 180;\n    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +\n      Math.cos(p1[0] * Math.PI / 180) * Math.cos(p2[0] * Math.PI / 180) *\n      Math.sin(dLon/2) * Math.sin(dLon/2);\n    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));\n    return R * c;\n  }\n\n  // Get the polyline from SOC Calculator node instead of current input\n  const routeData = $node[\"SOC Calculator\"].json;\n  const polyline = routeData.polyline;\n\n  if (!polyline || polyline.length === 0) {\n    throw new Error('No polyline provided');\n  }\n\n  // Decode polyline\n  const decodedRoute = decodePolyline(polyline);\n  \n  // Calculate cumulative distances for all points\n  const routeDistances = [0]; // First point is at 0km\n  let totalDist = 0;\n  \n  for (let i = 0; i < decodedRoute.length - 1; i++) {\n    const dist = haversineDistance(decodedRoute[i], decodedRoute[i + 1]);\n    totalDist += dist;\n    routeDistances.push(totalDist);\n  }\n  \n  console.log(`Route decoded: ${decodedRoute.length} points, total distance: ${totalDist.toFixed(1)}km`);\n\n  return [{\n    json: {\n      ...routeData,\n      decoded_route: decodedRoute,\n      route_distances: routeDistances,\n      total_calculated_distance: totalDist\n    }\n  }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        1504
+      ],
+      "id": "0f2488ab-479c-4723-9375-baaa1ca0eafa",
+      "name": "Decode Polyline"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Encode segments back to polyline format with cumulative distance\n  function encodePolyline(points) {\n    let encoded = '';\n    let prevLat = 0, prevLng = 0;\n\n    for (const point of points) {\n      const lat = Math.round(point[0] * 1e5);\n      const lng = Math.round(point[1] * 1e5);\n\n      encoded += encodeValue(lat - prevLat);\n      encoded += encodeValue(lng - prevLng);\n\n      prevLat = lat;\n      prevLng = lng;\n    }\n    return encoded;\n  }\n\n  function encodeValue(value) {\n    let encoded = '';\n    value = value < 0 ? ~(value << 1) : (value << 1);\n\n    while (value >= 0x20) {\n      encoded += String.fromCharCode((0x20 | (value & 0x1f)) + 63);\n      value >>= 5;\n    }\n    encoded += String.fromCharCode(value + 63);\n    return encoded;\n  }\n\n  // Extract only necessary route data (remove decoded_route)\n  const cleanRouteData = {\n    polyline: $json.route_data.polyline,\n    distance_km: $json.route_data.distance_km,\n    duration_minutes: $json.route_data.duration_minutes,\n    origin: $json.route_data.origin,\n    destination: $json.route_data.destination,\n    current_SOC: $json.route_data.current_SOC,\n    battery_capacity_kWh: $json.route_data.battery_capacity_kWh,\n    min_SOC: $json.route_data.min_SOC,\n    preferred_charging_level: $json.route_data.preferred_charging_level,\n    amenity_preferences: $json.route_data.amenity_preferences\n  };\n\n  // Process each segment\n  const encodedSegments = $json.segments.map(segment => ({\n    json: {\n      segment_index: segment.index,\n      segment_polyline: encodePolyline(segment.points),\n      segment_distance_km: segment.distance_km,\n      cumulative_start_km: segment.cumulative_start_km,\n      cumulative_end_km: segment.cumulative_end_km,\n      start_lat: segment.start_point[0],\n      start_lng: segment.start_point[1],\n      end_lat: segment.end_point[0],\n      end_lng: segment.end_point[1],\n      cache_key: `${segment.start_point[0].toFixed(3)},${segment.start_point[1].toFixed(3)}_${segment.end_point[0].toFixed(3)},${segment.end_point[1].toFixed(3)}`,\n      route_data: cleanRouteData\n    }\n  }));\n\n  console.log(`Encoded ${encodedSegments.length} segments`);\n  encodedSegments.forEach((seg, i) => {\n    console.log(`Segment ${i}: polyline length ${seg.json.segment_polyline.length} chars, cumulative: \n  ${seg.json.cumulative_start_km.toFixed(1)}-${seg.json.cumulative_end_km.toFixed(1)}km`);\n  });\n\n  return encodedSegments;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        1504
+      ],
+      "id": "1d2bcdb3-8b9e-410a-a4b9-70f6387db432",
+      "name": "Encode Segments"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        3104,
+        1504
+      ],
+      "id": "25d4a3f1-620a-4533-b263-dbbbd012273e",
+      "name": "Process Each Segment"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  segment_key AS cache_key,\n  stations::text AS stations,\n  expires_at\nFROM segment_station_cache\nWHERE route_id = $1\n  AND expires_at > NOW()\nORDER BY segment_key;\n",
+        "options": {
+          "queryReplacement": "={{ $json.route_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2784,
+        1264
+      ],
+      "id": "928da609-1f6c-4f10-bae7-d4137c671333",
+      "name": "Retrieve All Route Stations",
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use row from selected_stations_cache\nconst row = $input.first().json;\n\n// Parse stations safely\nlet selected = [];\ntry { selected = JSON.parse(row.stations || '[]'); } catch { selected = []; }\n\nreturn [{\n  json: {\n    from_cache: true,\n    route_id: row.route_id,\n    selected_stations: Array.isArray(selected) ? selected : [],\n    journey_metrics: {\n      total_charging_time: row.total_charging_time || 0,\n      total_detour_km: row.total_detour_km || 0,\n      total_energy_added: row.total_energy_added || 0,\n      expires_at: row.expires_at\n    },\n    // pass through for downstream\n    route_data: $node[\"SOC Calculator\"].json\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2864,
+        1088
+      ],
+      "id": "aad2ceb5-33f9-426b-9ebc-e50f1792d684",
+      "name": "Process Cached Selected Stations"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  stations::text AS stations\nFROM public.segment_station_cache\nWHERE route_id = $1\n  AND expires_at > NOW()\nORDER BY segment_key;\n",
+        "options": {
+          "queryReplacement": "={{ $json.route_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3072,
+        1088
+      ],
+      "id": "44801e1c-35d5-4e68-a33d-b49b86f7a9a7",
+      "name": "Fetch All Stations from Segment Cache",
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine cached selected stations with all stations from segment cache\n  const cachedSelectedData = $('Process Cached Selected Stations').first().json;\n  const segmentCacheData = $input.all();\n\n  // Extract all stations from segment cache\n  let allStations = [];\n  segmentCacheData.forEach(segment => {\n    if (segment.json.stations) {\n      // Check if stations is already parsed or needs parsing\n      const stations = typeof segment.json.stations === 'string'\n        ? JSON.parse(segment.json.stations)\n        : segment.json.stations;\n      allStations = allStations.concat(stations);\n    }\n  });\n\n  // Remove duplicates\n  const uniqueStations = [];\n  const seen = new Set();\n  allStations.forEach(station => {\n    const key = station.place_id || `${station.name}_${station.location?.latitude}_${station.location?.longitude}`;\n    if (!seen.has(key)) {\n      seen.add(key);\n      uniqueStations.push(station);\n    }\n  });\n\n  // Mark which stations are selected\n  const selectedStations = cachedSelectedData.selected_stations || [];\n  const selectedPlaceIds = new Set(selectedStations.map(s => s.place_id).filter(Boolean));\n  const finalAllStations = uniqueStations.map(station => ({\n    ...station,\n    station_name: station.name,\n    is_selected: selectedPlaceIds.has(station.place_id)\n  }));\n\n  return [{\n    json: {\n      selected_stations: selectedStations,\n      all_stations: finalAllStations,\n      journey_metrics: cachedSelectedData.journey_metrics,\n      from_cache: true,\n      route_data: cachedSelectedData.route_data\n    }\n  }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3488,
+        1088
+      ],
+      "id": "0ed3f1ad-5eba-4886-87fb-d153aec4b981",
+      "name": "Combine Cached Data with All Stations"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pass through after all segment writes; use route_id from Generate Cache Key\nconst gck = $node[\"Generate Cache Key\"].json;\nconst soc = $node[\"SOC Calculator\"].json;\n\nreturn [{\n  json: {\n    ready_to_retrieve: true,\n    route_id: gck.route_id,\n    route_data: soc,\n    origin: soc.origin,\n    destination: soc.destination\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3728,
+        1472
+      ],
+      "id": "a1656b61-4701-4ad8-9256-649f186c52a5",
+      "name": "Wait for All Segments"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process All Stations Retrieved from Database - Fixed Distance Calculation\n// This version uses actual distance_from_origin from station data\n\n// Get all database results (multiple rows, one per segment)\nconst dbResults = $input.all();\nconsole.log(`Retrieved ${dbResults.length} segments from database`);\n\n// Get route data\nconst routeData = $node[\"SOC Calculator\"].json;\nconst totalRouteDistance = routeData.distance_km;\n\n// Collect all stations from all segments\nconst allStations = [];\nlet stationId = 0;\nconst segmentData = [];\n\n// Process each database row (segment)\ndbResults.forEach((row, rowIndex) => {\n  const data = row.json;\n  \n  // Parse stations JSON if it's a string\n  let stations;\n  if (typeof data.stations === 'string') {\n    try {\n      stations = JSON.parse(data.stations);\n    } catch (e) {\n      console.log(`Failed to parse stations for row ${rowIndex}`);\n      return;\n    }\n  } else {\n    stations = data.stations;\n  }\n  \n  // If stations is an array of station objects\n  if (Array.isArray(stations)) {\n    // Extract segment index from stations data or use row order\n    let segmentIndex = rowIndex;\n    if (stations.length > 0 && stations[0].segment_index !== undefined) {\n      segmentIndex = stations[0].segment_index;\n    }\n    \n    segmentData.push({\n      segment_index: segmentIndex,\n      stations: stations,\n      cache_key: data.cache_key\n    });\n    \n    console.log(`Segment ${segmentIndex}: ${stations.length} stations`);\n  }\n});\n\n// Sort segments by index\nsegmentData.sort((a, b) => a.segment_index - b.segment_index);\n\n// Process all stations\nsegmentData.forEach(segment => {\n  const segmentIndex = segment.segment_index;\n  const stations = segment.stations;\n  \n  stations.forEach((station, idx) => {\n    if (!station || !station.name) return;\n    \n    // Use distance_from_origin if available, otherwise estimate\n    let distanceFromOrigin;\n    if (station.distance_from_origin_km !== undefined && station.distance_from_origin_km !== null) {\n      // Use the actual distance from the station data\n      distanceFromOrigin = station.distance_from_origin_km;\n    } else {\n      // Fallback estimation if not available\n      const segmentStartKm = segmentIndex * 225;\n      const segmentEndKm = Math.min((segmentIndex + 1) * 225, totalRouteDistance);\n      const positionInSegment = (idx + 1) / (stations.length + 1);\n      distanceFromOrigin = segmentStartKm + (segmentEndKm - segmentStartKm) * positionInSegment;\n    }\n    \n     allStations.push({\n        id: stationId++,\n        name: station.name,\n        place_id: station.place_id || station.id || null,  // ADD THIS LINE\n        original_segment: segmentIndex,\n        distance_from_origin_km: Math.round(distanceFromOrigin),\n        location: station.location || {},\n        address: station.address || '',\n        charging_speed_kw: station.charging_speed_kw || 50,\n        connector_count: station.connector_count || 1,\n        detour_km: Math.round((station.detour_km || 0) * 10) / 10,\n        rating: station.rating || 0,\n        amenity_match: station.amenity_match || false,\n        ev_options: station.ev_options || {},\n        time_impact_minutes: station.time_impact_minutes || 0,\n        on_route: station.on_route || (station.detour_km < 1),\n        worth_detour: station.worth_detour !== undefined ? station.worth_detour : true,\n        from_cache: true,\n        connector_types: station.connector_types || [],\n        user_rating_count: station.user_rating_count || 0,\n        amenity_score: station.amenity_score || 0,\n        points: station.points || 0,\n        detour_category: station.detour_category || 'unknown',\n       // ADD THESE NEW FIELDS:\n      business_status: station.business_status || 'OPERATIONAL',\n      website_uri: station.website_uri || '',\n      phone_number: station.phone_number || '',\n      payment_options: station.payment_options || {},\n      parking_options: station.parking_options || {},\n      accessibility_options: station.accessibility_options || {},\n      editorial_summary: station.editorial_summary || '',\n      types: station.types || [],\n      primary_type: station.primary_type || ''\n      });\n  });\n});\n\n// Sort by distance from origin\nallStations.sort((a, b) => a.distance_from_origin_km - b.distance_from_origin_km);\n\n// Remove duplicates (stations that appear in multiple segments)\nconst uniqueStations = [];\nconst seenNames = new Set();\n\nallStations.forEach(station => {\n  // Create a unique key using name and approximate location\n  const key = `${station.name}_${Math.round(station.distance_from_origin_km / 10)}`;\n  \n  if (!seenNames.has(key)) {\n    seenNames.add(key);\n    uniqueStations.push(station);\n  }\n});\n\n// Categorize stations\nconst stationsByCategory = {\n  onRoute: uniqueStations.filter(s => s.detour_km <= 2),\n  smallDetour: uniqueStations.filter(s => s.detour_km > 2 && s.detour_km <= 10),\n  largeDetour: uniqueStations.filter(s => s.detour_km > 10)\n};\n\n// Summary\nconst summary = {\n  total_segments: segmentData.length,\n  total_stations: uniqueStations.length,\n  duplicates_removed: allStations.length - uniqueStations.length,\n  by_category: {\n    on_route: stationsByCategory.onRoute.length,\n    small_detour: stationsByCategory.smallDetour.length,\n    large_detour: stationsByCategory.largeDetour.length\n  }\n};\n\nconsole.log(\"Database aggregation complete:\", summary);\n\n// Return complete aggregated data\nreturn [{\n  json: {\n    all_stations: uniqueStations,\n    total_stations: uniqueStations.length,\n    route_data: routeData,\n    station_categories: stationsByCategory,\n    segments_processed: segmentData.length,\n    summary: summary\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4176,
+        1472
+      ],
+      "id": "8af1a5a6-c71b-424d-af00-904850233a77",
+      "name": "Process All DB Stations"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fixed Rank and Select Top 5 — uses route_id from Generate Cache Key\n\nconst places = $json.places || [];\nconst segmentData = $node[\"Process Each Segment\"].json;\nconst userPreferences = segmentData.route_data.amenity_preferences || [];\n\n// Use canonical route_id\nconst routeId = $node[\"Generate Cache Key\"].json.route_id;\n\n// Handle empty results\nif (places.length === 0) {\n  return [{\n    json: {\n      segment_index: segmentData.segment_index,\n      cache_key: segmentData.cache_key,\n      route_id: routeId,\n      stations: [],\n      from_cache: false,\n      segment_data: segmentData,\n      error: 'No charging stations found for this segment'\n    }\n  }];\n}\n\n// Haversine\nfunction haversineDistance(p1, p2) {\n  const R = 6371;\n  const dLat = (p2[0] - p1[0]) * Math.PI / 180;\n  const dLon = (p2[1] - p1[1]) * Math.PI / 180;\n  const a = Math.sin(dLat/2) ** 2 +\n    Math.cos(p1[0]*Math.PI/180) * Math.cos(p2[0]*Math.PI/180) *\n    Math.sin(dLon/2) ** 2;\n  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));\n}\n\n// Perpendicular distance to segment\nfunction pointToLineDistance(point, lineStart, lineEnd) {\n  const [px, py] = point, [x1, y1] = lineStart, [x2, y2] = lineEnd;\n  const dx = x2 - x1, dy = y2 - y1;\n  if (dx === 0 && dy === 0) return haversineDistance(point, lineStart);\n  const t = Math.max(0, Math.min(1, ((px-x1)*dx + (py-y1)*dy) / (dx*dx + dy*dy)));\n  const closest = [x1 + t*dx, y1 + t*dy];\n  return haversineDistance(point, closest);\n}\n\nfunction calculateDetour(station) {\n  const stationPoint = [station.location.latitude, station.location.longitude];\n  const segStart = [segmentData.start_lat, segmentData.start_lng];\n  const segEnd   = [segmentData.end_lat,   segmentData.end_lng];\n  const direct = haversineDistance(segStart, segEnd);\n  const via    = haversineDistance(segStart, stationPoint) + haversineDistance(stationPoint, segEnd);\n  const detour = via - direct;\n  const perp = pointToLineDistance(stationPoint, segStart, segEnd);\n  if (perp < 2 && detour < 5) return Math.min(detour, 2);\n  return detour;\n}\n\nfunction getMaxChargingSpeed(station) {\n  const agg = station.evChargeOptions?.connectorAggregation || [];\n  let m = 0;\n  for (const c of agg) {\n    const v = parseInt(c.maxChargeRateKw || '0', 10);\n    if (!Number.isNaN(v) && v > m) m = v;\n  }\n  return m;\n}\n\nfunction getConnectorCount(station) {\n  const ev = station.evChargeOptions || {};\n  if (ev.connectorCount) return ev.connectorCount;\n  const agg = ev.connectorAggregation || [];\n  return agg.reduce((s, c) => s + (c.count || 1), 0) || 1;\n}\n\nfunction isTwoWheelerStation(station) {\n  const name = (station.displayName?.text || '').toLowerCase();\n  const addr = (station.formattedAddress || '').toLowerCase();\n  const kw = ['two wheeler','2 wheeler','two-wheeler','2-wheeler','bike','scooter','motorcycle','ather','ola electric','revolt','bajaj electric','tvs electric'];\n  return kw.some(k => name.includes(k) || addr.includes(k));\n}\n\nfunction calculateAmenityScore(station) {\n  if (!userPreferences.length) return 0;\n  const types = station.types || [];\n  const name = (station.displayName?.text || '').toLowerCase();\n  const addr = (station.formattedAddress || '').toLowerCase();\n  const points = { restaurant:30, food:25, cafe:25, shopping:20, shopping_mall:30, lodging:35, hotel:35, restroom:15, toilet:15, gas_station:10, convenience_store:15, supermarket:20 };\n  let score = 0;\n  for (const pref of userPreferences) {\n    const p = pref.toLowerCase();\n    if (types.some(t => t.toLowerCase().includes(p))) score += points[p] || 20;\n    else if (name.includes(p) || addr.includes(p)) score += (points[p] || 20) * 0.7;\n  }\n  return score;\n}\n\nfunction calculateDistanceFromOrigin(station) {\n  const segStartKm = segmentData.cumulative_start_km || 0;\n  const segEndKm   = segmentData.cumulative_end_km ?? segmentData.segment_distance_km;\n  const segStart = [segmentData.start_lat, segmentData.start_lng];\n  const segEnd   = [segmentData.end_lat,   segmentData.end_lng];\n  const segLen   = haversineDistance(segStart, segEnd);\n  const sPt      = [station.location.latitude, station.location.longitude];\n  const dStart   = haversineDistance(segStart, sPt);\n  const dEnd     = haversineDistance(sPt, segEnd);\n  let ratio = 0.5;\n  if (segLen > 0) {\n    const detourAmt = dStart + dEnd - segLen;\n    if (detourAmt < 10) ratio = Math.max(0, Math.min(1, dStart / segLen));\n    else {\n      const t = Math.max(0, Math.min(1,\n        ((sPt[0]-segStart[0])*(segEnd[0]-segStart[0]) + (sPt[1]-segStart[1])*(segEnd[1]-segStart[1])) /\n        ((segEnd[0]-segStart[0])**2 + (segEnd[1]-segStart[1])**2)\n      ));\n      ratio = t;\n    }\n  }\n  return segStartKm + (segEndKm - segStartKm) * ratio;\n}\n\nfunction pointsScore(station, speed, detour, connectors, amenity) {\n  let p = 0;\n  if (speed >= 350) p += 300; else if (speed >= 250) p += 250; else if (speed >= 150) p += 200;\n  else if (speed >= 100) p += 150; else if (speed >= 50) p += 100; else if (speed >= 20) p += 50;\n\n  if (detour <= 2) p += 100;\n  else if (detour < 5) p += 50;\n  else if (detour < 10) p += 0;\n  else if (detour < 15) p -= detour * 5;\n  else if (detour < 25) p -= 75 + (detour - 15) * 3;\n  else p -= 150 + (detour - 25) * 2;\n\n  p += Math.min(connectors * 20, 100);\n  p += amenity;\n\n  const rating = station.rating || 0;\n  p += rating * 10;\n  const rc = station.userRatingCount || 0;\n  if (rc > 100) p += 30; else if (rc > 50) p += 20; else if (rc > 20) p += 10;\n\n  return p;\n}\n\n// Filter, compute, score\nconst processed = [];\nfor (const st of places) {\n  if (isTwoWheelerStation(st)) continue;\n  const speed = getMaxChargingSpeed(st);\n  if (speed < 20) continue;\n\n  const detour = calculateDetour(st);\n  if (detour > 50) continue;\n\n  const dist0 = calculateDistanceFromOrigin(st);\n  const connectors = getConnectorCount(st);\n  const amenity = calculateAmenityScore(st);\n  const pts = pointsScore(st, speed, detour, connectors, amenity);\n\n  processed.push({\n    name: st.displayName?.text || 'Unknown Station',\n    place_id: st.id,\n    location: st.location,\n    address: st.formattedAddress || '',\n    segment_index: segmentData.segment_index,\n    distance_from_origin_km: Math.round(dist0),\n    charging_speed_kw: speed,\n    connector_count: connectors,\n    connector_types: (st.evChargeOptions?.connectorAggregation || []).map(c => c.type).filter(Boolean),\n    detour_km: Math.round(detour * 10) / 10,\n    points: Math.round(pts),\n    rating: st.rating || 0,\n    user_rating_count: st.userRatingCount || 0,\n    amenity_score: amenity,\n    amenity_match: amenity > 0,\n    ev_options: st.evChargeOptions || {},\n    on_route: detour <= 2,\n    detour_category: detour <= 2 ? 'on_route' : detour < 10 ? 'acceptable' : detour < 25 ? 'moderate' : 'far',\n    time_impact_minutes: Math.round((detour * 60 / 80) + (50 - speed) * 0.3),\n    business_status: st.businessStatus || 'OPERATIONAL',\n    website_uri: st.websiteUri || '',\n    phone_number: st.internationalPhoneNumber || '',\n    payment_options: st.paymentOptions || {},\n    parking_options: st.parkingOptions || {},\n    accessibility_options: st.accessibilityOptions || {},\n    editorial_summary: st.editorialSummary || '',\n    types: st.types || [],\n    primary_type: st.primaryType || ''\n  });\n}\n\n// Sort and select\nprocessed.sort((a, b) => b.points - a.points);\nconst compulsory = processed.filter(s => s.charging_speed_kw >= 60 && s.detour_km <= 10);\nconst remaining = processed.filter(s => !(s.charging_speed_kw >= 60 && s.detour_km <= 10));\nlet selected = [...compulsory];\nif (selected.length < 3) selected.push(...remaining.slice(0, 3 - selected.length));\n\nreturn [{\n  json: {\n    segment_index: segmentData.segment_index,\n    cache_key: segmentData.cache_key,\n    route_id: routeId,\n    stations: selected,\n    from_cache: false,\n    segment_data: segmentData\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3952,
+        1664
+      ],
+      "id": "85f554c2-47a9-48d1-b9dd-b2cfea853c82",
+      "name": "Rank and Select Stations"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO segment_station_cache (\n  route_id,\n  segment_key,\n  stations,\n  expires_at\n)\nVALUES (\n  '{{$json.route_id}}',\n  '{{$json.cache_key}}',\n  '{{JSON.stringify($json.stations || [])}}'::jsonb,\n  NOW() + INTERVAL '7 days'\n)\nON CONFLICT (route_id, segment_key) DO UPDATE SET\n  stations   = EXCLUDED.stations,\n  expires_at = NOW() + INTERVAL '7 days';\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4192,
+        1664
+      ],
+      "id": "316be1c7-e1ad-4606-ab5f-b7db41453429",
+      "name": "Save Stations to Cache",
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calculate Route Segments with Cumulative Distance Tracking\n// This version properly tracks cumulative distance for each segment\n\nconst SEGMENT_TARGET_KM = 100; // Target 100km segments\nconst points = $json.decoded_route;\nconst totalDistance = $json.distance_km;\n\n// Calculate distance between points\nfunction haversineDistance(p1, p2) {\n  const R = 6371; // Earth radius in km\n  const dLat = (p2[0] - p1[0]) * Math.PI / 180;\n  const dLon = (p2[1] - p1[1]) * Math.PI / 180;\n  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +\n    Math.cos(p1[0] * Math.PI / 180) * Math.cos(p2[0] * Math.PI / 180) *\n    Math.sin(dLon/2) * Math.sin(dLon/2);\n  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));\n  return R * c;\n}\n\n// Calculate cumulative distances\nconst cumulativeDistances = [0];\nlet totalDist = 0;\nfor (let i = 0; i < points.length - 1; i++) {\n  const dist = haversineDistance(points[i], points[i + 1]);\n  totalDist += dist;\n  cumulativeDistances.push(totalDist);\n}\n\n// Create segments based on actual distance traveled\nconst segments = [];\nlet segmentStartIdx = 0;\nlet segmentStartDist = 0;\nlet segmentIndex = 0;\n\nfor (let i = 1; i < points.length; i++) {\n  const currentDist = cumulativeDistances[i];\n  const segmentDist = currentDist - segmentStartDist;\n\n  // Create segment if we've reached target distance OR this is the last point\n  if (segmentDist >= SEGMENT_TARGET_KM || i === points.length - 1) {\n    const segmentPoints = points.slice(segmentStartIdx, i + 1);\n\n    segments.push({\n      index: segmentIndex++,\n      points: segmentPoints,\n      distance_km: segmentDist,\n      cumulative_start_km: segmentStartDist,  // Add cumulative distance at segment start\n      cumulative_end_km: currentDist,          // Add cumulative distance at segment end\n      start_point: segmentPoints[0],\n      end_point: segmentPoints[segmentPoints.length - 1],\n      point_count: segmentPoints.length\n    });\n\n    // Start next segment from current point\n    segmentStartIdx = i;\n    segmentStartDist = currentDist;\n  }\n}\n\n// If total distance is less than segment target, create single segment\nif (segments.length === 0) {\n  segments.push({\n    index: 0,\n    points: points,\n    distance_km: totalDistance,\n    cumulative_start_km: 0,\n    cumulative_end_km: totalDistance,\n    start_point: points[0],\n    end_point: points[points.length - 1],\n    point_count: points.length\n  });\n}\n\nconsole.log(`Created ${segments.length} segments from ${totalDistance}km route`);\nsegments.forEach((seg, i) => {\n  console.log(`Segment ${i}: ${seg.point_count} points, ${seg.distance_km.toFixed(1)}km, cumulative: ${seg.cumulative_start_km.toFixed(1)}-${seg.cumulative_end_km.toFixed(1)}km`);\n});\n\nreturn [{\n  json: {\n    segments: segments,\n    route_data: $json,\n    total_segments: segments.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        1504
+      ],
+      "id": "8845fc06-0d24-4627-b7c1-15f58c70da52",
+      "name": "Calculate Route Segments"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Use model output + canonical IDs from Generate Cache Key\nconst llm = $input.first().json;\nconst gck = $node[\"Generate Cache Key\"].json;\nconst allStations = $node[\"Process All DB Stations\"].json.all_stations || [];\nconst soc = $node[\"SOC Calculator\"].json;\nconst batteryCapacity = soc.battery_capacity_kWh || 50;\n\n// Extract text safely\nlet llmResponse = '';\nif (typeof llm === 'string') llmResponse = llm;\nelse if (llm.text) llmResponse = llm.text;\nelse if (llm.message?.content) llmResponse = llm.message.content;\nelse if (llm.content) llmResponse = llm.content;\n\n// Strip code fences\nlet cleaned = llmResponse;\nconst yank = tag => {\n  const s = cleaned.indexOf(tag);\n  if (s >= 0) {\n    const e = cleaned.indexOf('```', s + tag.length);\n    if (e > s) cleaned = cleaned.substring(s + tag.length, e).trim();\n  }\n};\nif (cleaned.includes('```json')) yank('```json'); else if (cleaned.includes('```')) yank('```');\n\n// If still not JSON, grab first {...}\nif (!cleaned.trim().startsWith('{')) {\n  const s = cleaned.indexOf('{');\n  if (s >= 0) {\n    let depth = 0, end = -1, inStr = false, esc = false;\n    for (let i = s; i < cleaned.length; i++) {\n      const ch = cleaned[i];\n      if (esc) { esc = false; continue; }\n      if (ch === '\\\\') { esc = true; continue; }\n      if (ch === '\"') inStr = !inStr;\n      if (!inStr) {\n        if (ch === '{') depth++;\n        if (ch === '}') { depth--; if (depth === 0) { end = i + 1; break; } }\n      }\n    }\n    if (end > s) cleaned = cleaned.substring(s, end);\n  }\n}\n\ntry {\n  const parsed = JSON.parse(cleaned);\n  const selectedStations = [];\n\n  if (Array.isArray(parsed.stops)) {\n    parsed.stops.forEach(stop => {\n      const st = allStations[stop.station_id];\n      if (st) {\n        selectedStations.push({\n          ...st,\n          station_name: st.name,\n          arrival_SOC: stop.arrival_soc,\n          departure_SOC: stop.departure_soc,\n          charging_duration_minutes: stop.charge_minutes,\n          energy_added_kwh: ((stop.departure_soc - stop.arrival_soc) * batteryCapacity) / 100,\n          is_critical: true,\n          reason: stop.reason\n        });\n      }\n    });\n  }\n\n  // Use canonical IDs from Generate Cache Key\n  const routeId = gck.route_id;\n  const routeSelectedStationsId = gck.route_selected_stations_id;\n\n  return [{\n    json: {\n      success: true,\n      selected_stations: selectedStations,\n      analysis: {\n        summary: parsed.summary || '',\n        stops_count: selectedStations.length\n      },\n      route_selected_stations_id: routeSelectedStationsId,\n      route_id: routeId\n    }\n  }];\n} catch (error) {\n  return [{\n    json: {\n      success: false,\n      error: error.message,\n      raw_response: (llmResponse || '').substring(0, 500),\n      cleaned_response: cleaned,\n      selected_stations: []\n    }\n  }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5120,
+        1472
+      ],
+      "id": "e3c6d883-6a50-4ed8-8c43-4b8a6a04fe72",
+      "name": "Process LLM Output"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO selected_stations_cache (\n  route_selected_stations_id,\n  route_id,\n  battery_capacity_kwh,\n  charging_preference,\n  current_soc,\n  stations,\n  total_charging_time,\n  total_detour_km,\n  total_energy_added,\n  expires_at\n)\nVALUES (\n  '{{$node[\"Generate Cache Key\"].json.route_selected_stations_id}}',\n  '{{$node[\"Generate Cache Key\"].json.route_id}}',\n  {{$node[\"SOC Calculator\"].json.battery_capacity_kWh}},\n  {{$node[\"SOC Calculator\"].json.preferred_charging_level}},\n  {{$node[\"SOC Calculator\"].json.current_SOC}},\n  '{{ $json.selected_stations\n        ? JSON.stringify($json.selected_stations)\n        : ($json.charging_plan?.selected_stations\n            ? JSON.stringify($json.charging_plan.selected_stations)\n            : ($json.stations_json || \"[]\")) }}'::jsonb,\n  {{\n    (\n      ($json.selected_stations\n        ?? $json.charging_plan?.selected_stations\n        ?? JSON.parse($json.stations_json || '[]')\n      ) || []\n    ).reduce((s,x)=> s + (Number(x.charging_duration_minutes ?? x.charging_time_\nminutes) || 0), 0)\n  }},\n  {{\n    (\n      ($json.selected_stations\n        ?? $json.charging_plan?.selected_stations\n        ?? JSON.parse($json.stations_json || '[]')\n      ) || []\n    ).reduce((s,x)=> s + (Number(x.detour_km) || 0), 0)\n  }},\n  {{\n    (\n      ($json.selected_stations\n        ?? $json.charging_plan?.selected_stations\n        ?? JSON.parse($json.stations_json || '[]')\n      ) || []\n    ).reduce((s,x)=> s + (Number(x.energy_added_kwh) || 0), 0)\n  }},\n  NOW() + INTERVAL '7 days'\n)\nON CONFLICT (route_selected_stations_id) DO UPDATE SET\n  stations = EXCLUDED.stations,\n  total_charging_time = EXCLUDED.total_charging_time,\n  total_detour_km = EXCLUDED.total_detour_km,\n  total_energy_added = EXCLUDED.total_energy_added,\n  expires_at = NOW() + INTERVAL '7 days';",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        5536,
+        1328
+      ],
+      "id": "ebacbbee-287a-42f5-9d62-94948b5b813a",
+      "name": "Save Selected Stations Cache",
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const SOC_NODE = 'SOC Calculator';\nconst DB_STATIONS_NODE = 'Process All DB Stations';\nconst CACHED_SELECTED_NODE = 'Process Cached Selected Stations';\n\n// Helpers\nfunction firstInputJson() {\n  var items = $input.all();\n  if (items && items.length > 0 && items[0] && items[0].json) return items[0].json;\n  return {};\n}\nfunction toArray(val) {\n  if (!val) return [];\n  if (Array.isArray(val)) return val;\n  if (typeof val === 'string') {\n    try { return JSON.parse(val || '[]'); } catch (e) { return []; }\n  }\n  return [];\n}\nfunction toNum(v) {\n  var n = Number(v == null ? 0 : v);\n  return isFinite(n) ? n : 0;\n}\nfunction safeItem(nodeName) {\n  try {\n    var items = $items(nodeName, 0, 0) || [];\n    var j = (items[0] && items[0].json) ? items[0].json : {};\n    return j || {};\n  } catch (e) {\n    return {};\n  }\n}\n\n// Inputs\nvar first = firstInputJson();\n\n// Route data\nvar soc = safeItem(SOC_NODE);\nvar routeData = first.route ? first.route : (first.route_data ? first.route_data\n : soc);\nrouteData = routeData || {};\n\nvar polyline = routeData.polyline || '';\nvar distance_km = toNum(routeData.distance_km);\nvar duration_minutes = toNum(routeData.duration_minutes);\nvar origin = routeData.origin || '';\nvar destination = routeData.destination || '';\n\n// All stations\nvar dbStations = safeItem(DB_STATIONS_NODE);\nvar allStations = toArray(first.all_stations || dbStations.all_stations);\n\n// Selected stations: prefer pipeline result, else cached\nvar cacheNodeJson = safeItem(CACHED_SELECTED_NODE);\nvar cachedSelected = toArray(cacheNodeJson.selected_stations);\nvar planSelected = toArray(first.selected_stations);\nvar selectedStations = planSelected.length ? planSelected : cachedSelected;\nvar fromCache = (!planSelected.length && cachedSelected.length > 0);\n\n// Normalize station fields without mutating inputs\nfunction normalizeStation(st) {\n  var out = {};\n  for (var k in st) { if (Object.prototype.hasOwnProperty.call(st, k)) out[k] = st[k]; }\n  if (!out.station_name) out.station_name = out.name || '';\n  if (out.charging_time_minutes == null && out.charging_duration_minutes != null\n) {\n    out.charging_time_minutes = out.charging_duration_minutes;\n  }\n  return out;\n}\n\nvar normSelected = selectedStations.map(normalizeStation);\nvar normAll = allStations.map(normalizeStation);\n\n// Metrics\nvar totalCharging = 0;\nvar totalDetour = 0;\nvar totalEnergy = 0;\nvar detourTime = 0;\nvar minArrival = null;\nvar speedSum = 0;\n\nfor (var i = 0; i < normSelected.length; i++) {\n  var s = normSelected[i] || {};\n  totalCharging += toNum(s.charging_time_minutes);\n  totalDetour += toNum(s.detour_km);\n  totalEnergy += toNum(s.energy_added_kwh);\n  var ti = toNum(s.time_impact_minutes);\n  if (ti > 0) detourTime += ti;\n  var arr = toNum(s.arrival_SOC);\n  if (isFinite(arr)) minArrival = (minArrival == null) ? arr : Math.min(minArrival, arr);\n  speedSum += toNum(s.charging_speed_kw);\n}\n\nvar onRoute = 0;\nfor (i = 0; i < normAll.length; i++) {\n  if (normAll[i] && normAll[i].on_route === true) onRoute++;\n}\nvar avgSpeed = normSelected.length ? (speedSum / normSelected.length) : 0;\n\n// Build response\nvar response = {\n  route: {\n    polyline: polyline,\n    distance_km: distance_km,\n    duration_minutes: duration_minutes,\n    origin: origin,\n    destination: destination\n  },\n  charging_plan: {\n    needed: normSelected.length > 0,\n    selected_stations: normSelected,\n    all_stations: normAll,\n    from_cache: fromCache\n  },\n  summary: {\n    origin: origin,\n    destination: destination,\n    base_duration_minutes: duration_minutes,\n    charging_time_minutes: Math.round(totalCharging),\n    detour_time_minutes: Math.round(detourTime),\n    estimated_total_duration: Math.round(duration_minutes + totalCharging + detourTime)\n  },\n  statistics: {\n    total_stations_found: normAll.length,\n    on_route_stations: onRoute,\n    stations_selected: normSelected.length,\n    avg_charging_speed_selected: Number(avgSpeed.toFixed(2)),\n    total_energy_required: Number(totalEnergy.toFixed(2)),\n    min_soc_reached: Number(((minArrival == null ? 0 : minArrival)).toFixed(1))\n  }\n};\n\nreturn [{ json: response }];"
+      },
+      "id": "8ac84874-b838-4303-a7f2-b590e4221a23",
+      "name": "Final Response Builder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        5856,
+        1488
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Updated Prepare Analytics Data Node\n// Works with the new database schema that has both target_soc (nullable) and preferred_charging_level\n\nconst data = $input.first().json;\n\n// Extract analytics data\nconst analytics = data.analytics || {};\n\n// Return formatted data for SQL insert\nreturn [{\n  json: {\n    origin: analytics.origin || 'unknown',\n    destination: analytics.destination || 'unknown',\n    current_soc: analytics.current_soc || 0,\n    battery_capacity_kwh: analytics.battery_capacity_kwh || 0,\n    min_soc: analytics.min_soc || 0,\n    target_soc: null, // Set to null since it's deprecated\n    preferred_charging_level: analytics.preferred_charging_level || 80, // New field\n    amenity_preferences: analytics.amenity_preferences || [],\n    selected_stations: analytics.selected_stations || [],\n    response_data: analytics.response_data || {},\n    // Keep the response for webhook\n    response: data.response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6160,
+        1600
+      ],
+      "id": "ce131508-aa65-485e-b5ad-86167be33187",
+      "name": "Prepare Analytics Data"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{JSON.stringify($json)}}",
+        "options": {}
+      },
+      "id": "1cf0d0f9-4afa-4a3f-950c-e9a948db6e35",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        6384,
+        1376
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Updated SQL Query for Save Analytics Node\n-- This query works with the new schema including preferred_charging_level\n\nINSERT INTO route_requests (\n    user_id,\n    origin,\n    destination,\n    current_soc,\n    battery_capacity_kwh,\n    min_soc,\n    target_soc,\n    preferred_charging_level,\n    amenity_preferences,\n    selected_stations,\n    response_data\n) VALUES (\n    null,\n    $1,  -- origin\n    $2,  -- destination\n    $3,  -- current_soc\n    $4,  -- battery_capacity_kwh\n    $5,  -- min_soc\n    $6,  -- target_soc (will be null)\n    $7,  -- preferred_charging_level (new)\n    $8::jsonb,  -- amenity_preferences\n    $9::jsonb,  -- selected_stations\n    $10::jsonb  -- response_data\n)",
+        "options": {
+          "queryReplacement": "={{[\n      $json.origin,\n      $json.destination,\n      $json.current_soc,\n      $json.battery_capacity_kwh,\n      $json.min_soc,\n      $json.target_soc,\n      $json.preferred_charging_level,\n      JSON.stringify($json.amenity_preferences),\n      JSON.stringify($json.selected_stations),\n      JSON.stringify($json.response_data)\n  ]}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        6384,
+        1568
+      ],
+      "id": "09e1f3f2-4d44-4c26-8755-4adc46aa0f9f",
+      "name": "Save Analytics",
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * LLM Prompt Builder — A* Review/Patch\n *\n * Expects input from the A* node:\n *  - json.all_stations: array of station objects with fields:\n *      distance_from_origin_km, charging_speed_kw, detour_km, name, rating, con\nnector_count, etc.\n *  - json.route_data: from SOC Calculator\n *      { distance_km, current_SOC, min_SOC, preferred_charging_level, battery_c\napacity_kWh, ... }\n *  - json.astar: { success, reason, selected_stations, diagnostics }\n *      selected_stations include station_index and astar annotations (arrival/d\nepart SOC, etc.)\n *\n * Produces:\n *  - { prompt, context } for the downstream LLM node\n *  - LLM must return strict JSON:\n *    {\n *      \"stops\": [\n *        {\n *          \"station_id\": <number from all_stations index>,\n *          \"arrival_soc\": <percent>,\n *          \"departure_soc\": <percent>,\n *          \"charge_minutes\": <int>,\n *          \"reason\": \"<short reason>\"\n *        }\n *      ],\n *      \"summary\": \"<string>\"\n *    }\n */\n\nconst input = $input.first()?.json || {};\nconst allStations = Array.isArray(input.all_stations) ? input.all_stations : [];\nconst routeData = input.route_data || {};\nconst astar = input.astar || {};\n\nconst batteryCapacity = Number(routeData.battery_capacity_kWh || 0);\nconst consumption = 0.2; // kWh/km (keep consistent with SOC Calculator)\nconst preferredChargingLevel = Number(routeData.preferred_charging_level || 80);\nconst minSOC = Number(routeData.min_SOC || 20);\nconst currentSOC = Number(routeData.current_SOC || 100);\nconst routeDistance = Number(routeData.distance_km || 0);\nconst safetyBuffer = 2; // %\nconst maxDetourKm = 40;\n\n// Pre-calculations for the prompt\nconst maxRangeFromFull = batteryCapacity > 0\n  ? (batteryCapacity * (100 - minSOC) / 100) / consumption\n  : 0;\nconst maxRangePerCharge = batteryCapacity > 0\n  ? (batteryCapacity * (preferredChargingLevel - minSOC) / 100) / consumption\n  : 0;\nconst minStopsNeeded = Math.max(1, Math.ceil(Math.max(0, routeDistance - maxRangeFromFull) / Math.max(1e-9, maxRangePerCharge)));\n\n// Summarize all stations (compact to keep prompt manageable)\nconst stationLines = allStations.map((s, i) => {\n  const km = Math.round(Number(s.distance_from_origin_km || 0));\n  const kw = Number(s.charging_speed_kw || 0);\n  const detour = (Number(s.detour_km || 0)).toFixed(1);\n  const rating = s.rating != null ? Number(s.rating).toFixed(1) : 'N/A';\n  return `${i}: ${km}km, ${kw}kW, ${detour}km detour, rating ${rating}, ${s.name\n || 'Station'}`;\n});\n\n// Summarize A* plan (if present)\nconst astarStops = Array.isArray(astar.selected_stations) ? astar.selected_stations : [];\nconst astarLines = astarStops.map(st => {\n  const id = Number(st.station_index);\n  const km = Math.round(Number(st.distance_from_origin_km || 0));\n  const kw = Number(st.charging_speed_kw || 0);\n  const detour = (Number(st.detour_km || 0)).toFixed(1);\n  const arr = st.astar?.arrival_soc != null ? Math.round(st.astar.arrival_soc) :\n null;\n  const dep = st.astar?.departure_soc != null ? Math.round(st.astar.departure_soc) : null;\n  const chm = st.astar?.charge_minutes != null ? Math.round(st.astar.charge_minutes) : null;\n  const arrTxt = arr != null && dep != null ? `(${arr}%→${dep}%, ${chm} min)` : \n'';\n  return `${id} @ ${km}km, ${kw}kW, ${detour}km detour ${arrTxt}`;\n}).join('\\n');\n\nconst diag = astar.diagnostics || {};\nconst diagText = `stops=${diag.stops ?? 0}, min_soc_reached=${diag.min_soc_reached_pct ?? 'N/A'}%, arrival_soc=${diag.arrival_soc_pct ?? 'N/A'}%, nodes=${diag.nodes_explored ?? 0}, compute=${diag.computation_ms ?? 0}ms`;\n\n// Build prompt\nconst prompt = `You are an EV route planning reviewer. An A* optimizer proposed \na baseline set of charging stops.\nYour job: either APPROVE as-is, or make MINIMAL edits to improve practical facto\nrs (amenities/brand/time-of-day/rating),\nWITHOUT violating energy constraints or detour limits. Output STRICT JSON ONLY p\ner the schema; no prose, no code fences.\n\nROUTE\n- Distance: ${routeDistance} km\n- Battery: ${batteryCapacity} kWh\n- Consumption: ${consumption} kWh/km\n- Start SOC: ${currentSOC}%\n- Min SOC + safety buffer: ${minSOC + safetyBuffer}%\n- Default charge target: ${preferredChargingLevel}%\n- Max detour to consider: ${maxDetourKm} km\n- Derived ranges:\n  - Max from full to min: ${Math.max(0, (batteryCapacity * (100 - minSOC) / 100 \n/ consumption)).toFixed(0)} km\n  - Max per charge (to ${preferredChargingLevel}%): ${Math.max(0, maxRangePerCharge).toFixed(0)} km\n  - Minimum stops needed: ${minStopsNeeded}\n\nA* BASELINE (station_id @ km, kW, detour (arr→dep, min))\n${astarLines || '(none)'}\n\nA* DIAGNOSTICS\n${diagText}\n\nALL STATIONS (id: km, kW, detour, rating, name)\n${stationLines.join('\\n')}\n\nCONSTRAINTS\n- Always keep SOC >= ${minSOC + safetyBuffer}% (including the safety buffer).\n- Keep station order strictly increasing by km.\n- Detour should be reasonable (<= ${maxDetourKm} km).\n- If you edit, prefer minimal changes (swap 0–2 stops or adjust charge_minutes/d\neparture_soc slightly).\n- Prefer higher kW when it meaningfully reduces charge time, if constraint-safe.\n- Keep total stops <= A* stops + 1 unless infeasible to reach destination otherw\nise.\n- Use ONLY station_id values from the list above (integers).\n- Return JSON only, no commentary, no code fences.\n\nOUTPUT SCHEMA (STRICT JSON)\n{\n  \"stops\": [\n    {\n      \"station_id\": <number>,             // index in ALL STATIONS list\n      \"arrival_soc\": <number 0-100>,      // SOC % upon arrival\n      \"departure_soc\": <number 0-100>,    // SOC % after charging (usually ${preferredChargingLevel})\n      \"charge_minutes\": <integer>,        // approximate charging duration\n      \"reason\": \"<short justification>\"\n    }\n  ],\n  \"summary\": \"<1-2 lines summarizing rationale>\"\n}\n\nIf A* plan is acceptable, simply echo the same stops (by their station_id) with \nreasonable arrival/departure SOC and charge_minutes.`;\n\n// Return prompt and context\nreturn {\n  prompt: prompt,\n  context: {\n    all_stations: allStations,\n    route_data: routeData,\n    astar: astar,\n    constraints: {\n      min_soc_pct: minSOC,\n      safety_buffer_pct: safetyBuffer,\n      target_soc_pct: preferredChargingLevel,\n      max_detour_km: maxDetourKm,\n      consumption_kwh_per_km: consumption\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4608,
+        1456
+      ],
+      "id": "70fe8018-4aca-4cdd-92ea-31cc7ae53e81",
+      "name": "LLM Prompt Builder"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.prompt }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        4768,
+        1456
+      ],
+      "id": "bbd7407c-357a-4999-b4cd-f44d1616fa46",
+      "name": "Basic LLM Chain",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  route_id AS cache_key,\n  stations::text AS stations,\n  expires_at\nFROM segment_station_cache\nWHERE route_id = $1\n  AND expires_at > NOW()\nORDER BY route_id;\n",
+        "options": {
+          "queryReplacement": "={{ $json.route_id }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3920,
+        1472
+      ],
+      "id": "52601ba1-c298-4fd5-8926-ff287059d481",
+      "name": "Retrieve All Stations from DB",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "qTL4FsQ64p5pOgCB",
+          "name": "Postgres account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://places.googleapis.com/v1/places:searchText",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Goog-FieldMask",
+              "value": "places.id,places.displayName,places.formattedAddress,places.location,places.types,places.primaryType,places.evChargeOptions,places.rating,places.userRatingCount,places.businessStatus,places.websiteUri,places.internationalPhoneNumber,places.paymentOptions,places.parkingOptions,places.accessibilityOptions"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"textQuery\": \"EV charging station fast charging\",\n    \"searchAlongRouteParameters\": {\n      \"polyline\": {\n        \"encodedPolyline\": {{JSON.stringify($node[\"Process Each Segment\"].json.segment_polyline)}}\n      }\n    },\n    \"maxResultCount\": 20,\n    \"includedType\": \"electric_vehicle_charging_station\"\n  }",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3424,
+        1648
+      ],
+      "id": "d8a69a78-cc0a-4b30-93c8-70d35f5214a8",
+      "name": "Search Stations Along Segment1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5dc8hm4J2AbJsrEu",
+          "name": "Google Maps"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * A* (constraint-aware) baseline selector for EV charging stops.\n * Input (from \"Process All DB Stations\"):\n *  - json.all_stations: [{ distance_from_origin_km, charging_speed_kw, detour_k\nm, ... }]\n *  - json.route_data: SOC Calculator output (distance_km, current_SOC, min_SOC,\n preferred_charging_level, battery_capacity_kWh)\n *\n * Output (to \"LLM Prompt Builder\"):\n *  - json.all_stations: passthrough\n *  - json.route_data: passthrough\n *  - json.astar: { selected_stations, diagnostics }\n *\n * Notes:\n *  - Treats distance_from_origin_km as route position (km from start).\n *  - Uses 0.2 kWh/km consumption by default (matches your SOC Calculator).\n *  - Applies safety buffer to min SoC; charges to preferred_charging_level by d\nefault.\n */\n\nfunction nowMs() { return (typeof performance !== 'undefined' ? performance.now(\n) : Date.now()); }\n\nfunction planWithGreedyAStarLike(params) {\n  const {\n    routeLengthKm,\n    stations,\n    batteryKWh,\n    consumptionKWhPerKm,\n    startingSocPct,\n    minSocPct,\n    targetSocPct,\n    maxDetourKm = 40, // ignore very far off-route stations\n  } = params;\n\n  // Normalize inputs\n  const startSoc = Math.max(0, Math.min(100, Number(startingSocPct || 100)));\n  const minSoc = Math.max(0, Math.min(100, Number(minSocPct || 15)));\n  const targetSoc = Math.max(minSoc, Math.min(100, Number(targetSocPct || 80)));\n  const SAFETY_BUFFER = 2; // % addition to min SOC to reduce risk\n\n  // Convert to fractions\n  const startSocF = startSoc / 100;\n  const minSocF = (minSoc + SAFETY_BUFFER) / 100;\n  const targetSocF = targetSoc / 100;\n\n  // Guardrails\n  if (!Number.isFinite(routeLengthKm) || routeLengthKm <= 0) {\n    return { success: false, reason: 'Invalid route length', path: [], minSocReached: startSocF, arrivalSoc: startSocF, nodesExplored: 0 };\n  }\n  if (!Number.isFinite(batteryKWh) || batteryKWh <= 0) {\n    return { success: false, reason: 'Invalid battery capacity', path: [], minSocReached: startSocF, arrivalSoc: startSocF, nodesExplored: 0 };\n  }\n  const cons = Number(consumptionKWhPerKm || 0.2);\n  if (!Number.isFinite(cons) || cons <= 0) {\n    return { success: false, reason: 'Invalid consumption', path: [], minSocReached: startSocF, arrivalSoc: startSocF, nodesExplored: 0 };\n  }\n\n  // Sort stations by route position and filter by detour\n  const candidates = (stations || [])\n    .filter(s => Number.isFinite(s.distance_from_origin_km))\n    .filter(s => !Number.isFinite(maxDetourKm) || (Number(s.detour_km || 0) <= maxDetourKm))\n    .slice()\n    .sort((a, b) => a.distance_from_origin_km - b.distance_from_origin_km)\n    .map((s, idx) => ({\n      idx,\n      pos: Number(s.distance_from_origin_km),\n      power: Number(s.charging_speed_kw || 0), // kW\n      detour: Number(s.detour_km || 0),\n      rating: Number(s.rating || 0),\n      connectors: Number(s.connector_count || 1),\n    }));\n\n  const energyForKm = (km) => cons * km;                  // kWh\n  const socDropForKm = (km) => energyForKm(km) / batteryKWh; // fraction 0..1\n  const kmReachableAtSoc = (socFraction) => (Math.max(0, socFraction - minSocF) \n* batteryKWh) / cons;\n\n  const path = [];\n  let currentPos = 0;           // km from start\n  let currentSocF = startSocF;  // 0..1\n  let nodesExplored = 0;\n  let minSocReached = currentSocF;\n\n  // Quick no-stop feasibility\n  const canReachDirect = currentPos + kmReachableAtSoc(currentSocF) >= routeLengthKm;\n  if (canReachDirect) {\n    const distanceToEnd = routeLengthKm - currentPos;\n    const arrivalSoc = currentSocF - socDropForKm(distanceToEnd);\n    return {\n      success: true,\n      reason: 'No stop needed',\n      path,\n      minSocReached: Math.min(minSocReached, arrivalSoc),\n      arrivalSoc,\n      nodesExplored: 1,\n    };\n  }\n\n  // Main loop: greedily pick the furthest safe station within reach, tie-break by power/detour\n  // This behaves like the classic \"min refuels\" greedy with practical tie-breakers.\n  const MAX_STOPS = 20;\n  while (currentPos < routeLengthKm && path.length < MAX_STOPS) {\n    nodesExplored++;\n\n    const maxReachKm = currentPos + kmReachableAtSoc(currentSocF);\n    if (maxReachKm >= routeLengthKm) {\n      // We can reach destination\n      const legKm = routeLengthKm - currentPos;\n      const arrivalSoc = currentSocF - socDropForKm(legKm);\n      minSocReached = Math.min(minSocReached, arrivalSoc);\n      return {\n        success: true,\n        reason: 'Reached destination',\n        path,\n        minSocReached,\n        arrivalSoc,\n        nodesExplored,\n      };\n    }\n\n    // Stations we can safely reach from current state\n    const reachable = candidates.filter(s => s.pos > currentPos && s.pos <= maxReachKm);\n    if (reachable.length === 0) {\n      return {\n        success: false,\n        reason: 'No reachable station before min SOC',\n        path,\n        minSocReached,\n        arrivalSoc: currentSocF,\n        nodesExplored,\n      };\n    }\n\n    // Pick best next stop:\n    //  - prioritize furthest to reduce total stops\n    //  - prefer higher power\n    //  - prefer smaller detour\n    reachable.sort((a, b) => {\n      const byPos = b.pos - a.pos;\n      if (Math.abs(byPos) > 1e-6) return byPos;\n      const byPower = (b.power || 0) - (a.power || 0);\n      if (Math.abs(byPower) > 1e-6) return byPower;\n      return (a.detour || 0) - (b.detour || 0);\n    });\n\n    const next = reachable[0];\n\n    // Compute arrival SOC at this station\n    const legKm = next.pos - currentPos;\n    const arrivalSoc = currentSocF - socDropForKm(legKm);\n    if (arrivalSoc < minSocF) {\n      return {\n        success: false,\n        reason: 'Constraint violated upon arrival',\n        path,\n        minSocReached,\n        arrivalSoc,\n        nodesExplored,\n      };\n    }\n\n    // Decide charge amount: charge to targetSoc by default\n    const departSoc = Math.max(arrivalSoc, targetSocF);\n    const chargeAmountF = Math.max(0, departSoc - arrivalSoc); // fraction of battery\n    const energyAddedKWh = chargeAmountF * batteryKWh;\n\n    // Estimate charging time (minutes), with tapering safety factor\n    const effectivePowerKw = Math.max(10, Math.min(next.power || 0, 180)); // clamp\n    const taperFactor = 1.1; // 10% overhead\n    const chargeMinutes = effectivePowerKw > 0 ? (energyAddedKWh / effectivePowerKw) * 60 * taperFactor : 0;\n\n    // Commit stop\n    path.push({\n      station_index: next.idx,        // index into all_stations array\n      position_km: next.pos,\n      arrival_soc: Math.max(0, Math.min(1, arrivalSoc)) * 100,\n      departure_soc: Math.max(0, Math.min(1, departSoc)) * 100,\n      charge_minutes: Math.round(chargeMinutes),\n      charge_kwh: Math.round(energyAddedKWh * 10) / 10,\n      power_kw: next.power || 0,\n      detour_km: next.detour || 0,\n    });\n\n    // Update state\n    minSocReached = Math.min(minSocReached, arrivalSoc);\n    currentPos = next.pos;\n    currentSocF = departSoc;\n  }\n\n  // Final feasibility check (after loop)\n  if (currentPos >= routeLengthKm) {\n    return {\n      success: true,\n      reason: 'Reached destination',\n      path,\n      minSocReached,\n      arrivalSoc: currentSocF,\n      nodesExplored,\n    };\n  }\n\n  return {\n    success: false,\n    reason: 'Exceeded max stops or couldn’t reach destination',\n    path,\n    minSocReached,\n    arrivalSoc: currentSocF,\n    nodesExplored,\n  };\n}\n\nconst t0 = nowMs();\nconst input = $input.first()?.json || {};\n\nconst allStations = Array.isArray(input.all_stations) ? input.all_stations : [];\nconst routeData = input.route_data || $node['SOC Calculator'].json || {};\n\nconst routeLengthKm = Number(routeData.distance_km || 0);\nconst batteryKWh = Number(routeData.battery_capacity_kWh || 0);\nconst startingSocPct = Number(routeData.current_SOC || 100);\nconst minSocPct = Number(routeData.min_SOC || 15);\nconst targetSocPct = Number(routeData.preferred_charging_level || 80);\nconst consumptionKWhPerKm = 0.2; // keep consistent with SOC Calculator\n\nconst result = planWithGreedyAStarLike({\n  routeLengthKm,\n  stations: allStations,\n  batteryKWh,\n  consumptionKWhPerKm,\n  startingSocPct,\n  minSocPct,\n  targetSocPct,\n  maxDetourKm: 40,\n});\n\nconst computationMs = Math.round(nowMs() - t0);\n\n// Map selected stops back to full station objects with A* annotations\nconst selectedStations = (result.path || []).map(stop => {\n  const st = allStations[stop.station_index];\n  if (!st) return null;\n  return {\n    ...st,\n    station_index: stop.station_index,\n    astar: {\n      position_km: stop.position_km,\n      arrival_soc: stop.arrival_soc,\n      departure_soc: stop.departure_soc,\n      charge_minutes: stop.charge_minutes,\n      charge_kwh: stop.charge_kwh,\n      power_kw: stop.power_kw,\n      detour_km: stop.detour_km,\n    },\n  };\n}).filter(Boolean);\n\n// Emit for LLM Prompt Builder\nreturn [{\n  json: {\n    all_stations: allStations,\n    route_data: routeData,\n    astar: {\n      success: result.success,\n      reason: result.reason,\n      selected_stations: selectedStations,\n      diagnostics: {\n        stops: selectedStations.length,\n        min_soc_reached_pct: Math.round((result.minSocReached || 0) * 1000) / 10\n,\n        arrival_soc_pct: Math.round((result.arrivalSoc || 0) * 1000) / 10,\n        nodes_explored: result.nodesExplored || 0,\n        computation_ms: computationMs,\n        constraints: {\n          min_soc_pct: minSocPct,\n          target_soc_pct: targetSocPct,\n          buffer_pct: 2,\n        },\n      },\n    },\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4384,
+        1472
+      ],
+      "id": "95cb1292-4b67-4308-8325-d833f3cb902a",
+      "name": "Astar"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-nano",
+          "mode": "list",
+          "cachedResultName": "gpt-5-nano"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        4704,
+        1664
+      ],
+      "id": "b43694c1-e19d-436f-9371-e956f5c098c2",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "69lV8CCCoNAIFQdP",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst data = (items && items.length ? items[0].json : {});\nconst arr = Array.isArray(data.selected_stations) ? data.selected_stations : [];\n\nvar total_charging_time = 0;\nvar total_detour_km = 0;\nvar total_energy_added = 0;\n\nfor (var i = 0; i < arr.length; i++) {\n  var x = arr[i] || {};\n  var cd = x.charging_duration_minutes;\n  if (cd == null) cd = x.charging_time_minutes;\n  if (cd == null) cd = 0;\n  total_charging_time += Number(cd);\n\n  var dk = x.detour_km;\n  if (dk == null) dk = 0;\n  total_detour_km += Number(dk);\n\n  var ea = x.energy_added_kwh;\n  if (ea == null) ea = 0;\n  total_energy_added += Number(ea);\n}\n\nreturn [{\n  json: {\n    stations_json: JSON.stringify(arr),\n    total_charging_time: Math.round(total_charging_time),\n    total_detour_km: Number((Math.round(total_detour_km * 10) / 10).toFixed(1)),\n    total_energy_added: Number((Math.round(total_energy_added * 10) / 10).toFixed(1)) \n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5296,
+        1344
+      ],
+      "id": "71b500e0-5a25-44be-9dd9-78a1678b02bd",
+      "name": "Prepare Selected Stations Params"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load User Preferences",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load User Preferences": {
+      "main": [
+        [
+          {
+            "node": "Route Cache Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Cache Check": {
+      "main": [
+        [
+          {
+            "node": "Route Cache Empty?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Cache Empty?": {
+      "main": [
+        [
+          {
+            "node": "Google Routes API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge Route Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Routes API": {
+      "main": [
+        [
+          {
+            "node": "Merge Route Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Route Data": {
+      "main": [
+        [
+          {
+            "node": "SOC Calculator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SOC Calculator": {
+      "main": [
+        [
+          {
+            "node": "Generate Cache Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Cache Key": {
+      "main": [
+        [
+          {
+            "node": "Check Selected Stations Cache",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Selected Stations Cache": {
+      "main": [
+        [
+          {
+            "node": "Selected Stations Cached?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Selected Stations Cached?": {
+      "main": [
+        [
+          {
+            "node": "Process Cached Selected Stations",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route Stations Cache Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Stations Cache Check": {
+      "main": [
+        [
+          {
+            "node": "Check Route Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Cached Route?": {
+      "main": [
+        [
+          {
+            "node": "Retrieve All Route Stations",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Decode Polyline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Route Cache": {
+      "main": [
+        [
+          {
+            "node": "Has Cached Route?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode Polyline": {
+      "main": [
+        [
+          {
+            "node": "Calculate Route Segments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encode Segments": {
+      "main": [
+        [
+          {
+            "node": "Process Each Segment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each Segment": {
+      "main": [
+        [
+          {
+            "node": "Wait for All Segments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search Stations Along Segment1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve All Route Stations": {
+      "main": [
+        [
+          {
+            "node": "Process All DB Stations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Cached Selected Stations": {
+      "main": [
+        [
+          {
+            "node": "Fetch All Stations from Segment Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch All Stations from Segment Cache": {
+      "main": [
+        [
+          {
+            "node": "Combine Cached Data with All Stations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Cached Data with All Stations": {
+      "main": [
+        [
+          {
+            "node": "Final Response Builder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for All Segments": {
+      "main": [
+        [
+          {
+            "node": "Retrieve All Stations from DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process All DB Stations": {
+      "main": [
+        [
+          {
+            "node": "Astar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rank and Select Stations": {
+      "main": [
+        [
+          {
+            "node": "Save Stations to Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Stations to Cache": {
+      "main": [
+        [
+          {
+            "node": "Process Each Segment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Route Segments": {
+      "main": [
+        [
+          {
+            "node": "Encode Segments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process LLM Output": {
+      "main": [
+        [
+          {
+            "node": "Final Response Builder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Selected Stations Params",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Response Builder": {
+      "main": [
+        [
+          {
+            "node": "Prepare Analytics Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Analytics Data": {
+      "main": [
+        [
+          {
+            "node": "Save Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Prompt Builder": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Process LLM Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve All Stations from DB": {
+      "main": [
+        [
+          {
+            "node": "Process All DB Stations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Stations Along Segment1": {
+      "main": [
+        [
+          {
+            "node": "Rank and Select Stations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Astar": {
+      "main": [
+        [
+          {
+            "node": "LLM Prompt Builder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Selected Stations Params": {
+      "main": [
+        [
+          {
+            "node": "Save Selected Stations Cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "d843fb76-fb2e-448f-a3e3-9aa832ce3ab4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "67a8a24fafcdad9587a83bd913d2e4298a8e8f8835d84863454498fa7176d416"
+  },
+  "id": "Md5riZJLSzs9WNv9",
+  "tags": []
+}
