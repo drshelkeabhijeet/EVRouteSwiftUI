@@ -5,7 +5,22 @@
       "Bash(find:*)",
       "Bash(mkdir:*)",
       "Bash(xcodebuild:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(printf \"github.com\\n1\\n\\n\")",
+      "Bash(gh auth login:*)",
+      "Bash(open \"https://github.com/new\")",
+      "Bash(git push:*)",
+      "Read(//Users/abhijeetshelke/Desktop/untitled folder/EVRouteWeb/**)",
+      "Read(//Users/abhijeetshelke/Desktop/untitled folder/ev-route-web/**)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn init:*)",
+      "Bash(npx shadcn add:*)",
+      "Bash(npm install:*)",
+      "Bash(touch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)"
     ],
     "deny": []
   }
