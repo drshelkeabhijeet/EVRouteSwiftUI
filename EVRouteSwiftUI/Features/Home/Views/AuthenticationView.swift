@@ -240,7 +240,7 @@ struct SignupView: View {
         isLoading = true
         
         do {
-            try await authManager.signUp(email: email, password: password, name: name)
+            try await authManager.signUp(email: email, password: password, name: name, phone: "+1234567890", displayName: name)
         } catch {
             errorMessage = error.localizedDescription
             showError = true

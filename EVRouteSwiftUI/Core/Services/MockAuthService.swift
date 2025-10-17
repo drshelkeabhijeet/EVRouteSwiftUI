@@ -15,7 +15,11 @@ final class MockAuthService {
             id: UUID().uuidString,
             email: email,
             name: "Test User",
-            createdAt: Date()
+            phone: "+1234567890",
+            displayName: "Test User",
+            profileImageUrl: nil,
+            createdAt: Date(),
+            updatedAt: Date()
         )
         
         return AuthResponse(user: user, token: "mock-token-123")
@@ -30,7 +34,11 @@ final class MockAuthService {
             id: UUID().uuidString,
             email: email,
             name: name,
-            createdAt: Date()
+            phone: "+1234567890",
+            displayName: name,
+            profileImageUrl: nil,
+            createdAt: Date(),
+            updatedAt: Date()
         )
         
         return AuthResponse(user: user, token: "mock-token-123")
