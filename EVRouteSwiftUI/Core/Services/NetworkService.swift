@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import Supabase
 
 enum NetworkError: LocalizedError {
     case invalidURL
@@ -58,8 +59,11 @@ final class NetworkService: NetworkServiceProtocol {
         }
         
         // Add auth token if available
-        if let token = await AuthManager.shared.getToken() {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        do {
+            let session = try await SupabaseManager.shared.client.auth.session
+            request.setValue("Bearer \(session.accessToken)", forHTTPHeaderField: "Authorization")
+        } catch {
+            // No valid session, continue without auth header
         }
         
         do {

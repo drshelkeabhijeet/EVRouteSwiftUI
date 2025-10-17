@@ -6,7 +6,6 @@ struct RoutePlanningView: View {
     @StateObject private var locationManager = LocationManager.shared
     @StateObject private var vehicleManager = VehicleManager.shared
     @State private var showVehiclePicker = false
-    @State private var showPrefsSheet = false
     @State private var showSocSheet = false
     @State private var mapPosition: MapCameraPosition = .region(
         MKCoordinateRegion(
@@ -102,15 +101,6 @@ struct RoutePlanningView: View {
                             }
                             .buttonStyle(.plain)
 
-                            // Prefs chip
-                            Button { showPrefsSheet = true } label: {
-                                if viewModel.selectedAmenities.isEmpty {
-                                    Chip(icon: "slider.horizontal.3", label: "Prefs")
-                                } else {
-                                    Chip(icon: "slider.horizontal.3", label: "Prefs (\(viewModel.selectedAmenities.count))")
-                                }
-                            }
-                            .buttonStyle(.plain)
                         }
                         .scaleEffect(0.9)
                     }
@@ -216,13 +206,6 @@ struct RoutePlanningView: View {
         // Vehicle picker sheet
         .sheet(isPresented: $showVehiclePicker) {
             NavigationStack { VehicleSelectionView() }
-        }
-        // Preferences sheet
-        .sheet(isPresented: $showPrefsSheet) {
-            PreferencesSheet(
-                selected: $viewModel.selectedAmenities,
-                selectedConnectors: $viewModel.preferredConnectors
-            )
         }
         // SOC quick adjust sheet
         .sheet(isPresented: $showSocSheet) {

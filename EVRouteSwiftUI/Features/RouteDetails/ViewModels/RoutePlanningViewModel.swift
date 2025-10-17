@@ -17,7 +17,12 @@ final class RoutePlanningViewModel: ObservableObject {
             objectWillChange.send()
         }
     }
-    @Published var currentSOC: Double = 80.0
+    @Published var currentSOC: Double = 100.0 {
+        didSet {
+            // Save to UserDefaults when changed
+            UserDefaults.standard.set(currentSOC, forKey: "batteryLevel")
+        }
+    }
     @Published var selectedAmenities: Set<String> = []
     @Published var preferredConnectors: Set<Connector.ConnectorType> = []
     @Published var isLoading = false
@@ -41,6 +46,12 @@ final class RoutePlanningViewModel: ObservableObject {
     }
     
     init() {
+        // Load saved battery level
+        let savedBatteryLevel = UserDefaults.standard.double(forKey: "batteryLevel")
+        if savedBatteryLevel > 0 {
+            currentSOC = savedBatteryLevel
+        }
+        
         // Observe vehicle changes
         vehicleManager.$selectedVehicle
             .sink { [weak self] _ in

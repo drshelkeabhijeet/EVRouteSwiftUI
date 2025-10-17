@@ -59,12 +59,12 @@ struct SimpleAuthenticationView: View {
         isLoading = true
         
         do {
-            try await authManager.login(email: email, password: password)
+            try await authManager.signIn(email: email, password: password)
         } catch {
             print("Demo login error: \(error)")
             // Silently fail and retry
             try? await Task.sleep(nanoseconds: 500_000_000)
-            try? await authManager.login(email: email, password: password)
+            try? await authManager.signIn(email: email, password: password)
         }
         
         isLoading = false

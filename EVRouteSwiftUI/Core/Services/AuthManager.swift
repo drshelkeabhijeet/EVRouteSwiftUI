@@ -1,6 +1,17 @@
 import Foundation
-import Security
 import Combine
+import Supabase
+
+enum AuthError: LocalizedError {
+    case emailConfirmationRequired
+    
+    var errorDescription: String? {
+        switch self {
+        case .emailConfirmationRequired:
+            return "Please check your email and click the confirmation link to activate your account."
+        }
+    }
+}
 
 @MainActor
 final class AuthManager: ObservableObject {
@@ -8,145 +19,108 @@ final class AuthManager: ObservableObject {
     
     @Published private(set) var currentUser: User?
     @Published private(set) var isAuthenticated = false
+    @Published private(set) var isLoading = false
     
-    private let keychain = KeychainService()
-    private let userDefaults = UserDefaults.standard
-    
-    private let tokenKey = "auth_token"
-    private let userKey = "current_user"
+    private let supabase = SupabaseManager.shared.client
     
     private init() {
         Task {
-            await loadStoredAuth()
+            await checkAuthState()
         }
     }
     
-    func login(email: String, password: String) async throws {
-        // TODO: Switch to real API when ready
-        // let endpoint = AuthEndpoint.login(email: email, password: password)
-        // let response: AuthResponse = try await NetworkService.shared.request(endpoint)
+    func signUp(email: String, password: String, name: String, phone: String, displayName: String) async throws {
+        isLoading = true
+        defer { isLoading = false }
         
-        // Using mock service for now
-        let response = try await MockAuthService.shared.login(email: email, password: password)
+        let response = try await supabase.auth.signUp(
+            email: email,
+            password: password,
+            data: [
+                "name": .string(name),
+                "phone": .string(phone),
+                "display_name": .string(displayName)
+            ]
+        )
         
-        try keychain.save(response.token, forKey: tokenKey)
-        currentUser = response.user
+        // For email confirmation, we don't automatically authenticate
+        // The user needs to confirm their email first
+        // We'll throw a custom error to indicate email confirmation is needed
+        if response.session == nil {
+            throw AuthError.emailConfirmationRequired
+        }
+        
+        if let session = response.session {
+            currentUser = User(
+                id: session.user.id.uuidString,
+                email: session.user.email ?? "",
+                name: name,
+                phone: phone,
+                displayName: displayName,
+                profileImageUrl: nil,
+                createdAt: Date(),
+                updatedAt: Date()
+            )
+            isAuthenticated = true
+        }
+    }
+    
+    func signIn(email: String, password: String) async throws {
+        isLoading = true
+        defer { isLoading = false }
+        
+        let response = try await supabase.auth.signIn(
+            email: email,
+            password: password
+        )
+        
+        let userName = response.user.userMetadata["name"]?.stringValue ?? ""
+        let userPhone = response.user.userMetadata["phone"]?.stringValue
+        let userDisplayName = response.user.userMetadata["display_name"]?.stringValue
+        let profileImageUrl = response.user.userMetadata["profile_image_url"]?.stringValue
+        
+        currentUser = User(
+            id: response.user.id.uuidString,
+            email: response.user.email ?? "",
+            name: userName,
+            phone: userPhone,
+            displayName: userDisplayName,
+            profileImageUrl: profileImageUrl,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
         isAuthenticated = true
-        
-        // Save user to UserDefaults
-        if let userData = try? JSONEncoder().encode(response.user) {
-            userDefaults.set(userData, forKey: userKey)
-        }
     }
     
-    func signup(email: String, password: String, name: String) async throws {
-        // TODO: Switch to real API when ready
-        // let endpoint = AuthEndpoint.signup(email: email, password: password, name: name)
-        // let response: AuthResponse = try await NetworkService.shared.request(endpoint)
-        
-        // Using mock service for now
-        let response = try await MockAuthService.shared.signup(email: email, password: password, name: name)
-        
-        try keychain.save(response.token, forKey: tokenKey)
-        currentUser = response.user
-        isAuthenticated = true
-        
-        // Save user to UserDefaults
-        if let userData = try? JSONEncoder().encode(response.user) {
-            userDefaults.set(userData, forKey: userKey)
-        }
-    }
-    
-    func logout() {
-        try? keychain.delete(forKey: tokenKey)
-        userDefaults.removeObject(forKey: userKey)
+    func signOut() async throws {
+        try await supabase.auth.signOut()
         currentUser = nil
         isAuthenticated = false
     }
     
-    func getToken() async -> String? {
-        try? keychain.load(forKey: tokenKey)
-    }
-    
-    private func loadStoredAuth() async {
-        // Load token
-        if let token = try? keychain.load(forKey: tokenKey),
-           !token.isEmpty {
-            // Load user
-            if let userData = userDefaults.data(forKey: userKey),
-               let user = try? JSONDecoder().decode(User.self, from: userData) {
-                currentUser = user
-                isAuthenticated = true
-            }
-        }
-    }
-}
-
-// Keychain Service
-final class KeychainService {
-    enum KeychainError: Error {
-        case duplicateItem
-        case itemNotFound
-        case unexpectedData
-        case unhandledError(status: OSStatus)
-    }
-    
-    func save(_ string: String, forKey key: String) throws {
-        guard let data = string.data(using: .utf8) else {
-            throw KeychainError.unexpectedData
-        }
-        
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecValueData as String: data
-        ]
-        
-        // Try to delete existing item first
-        SecItemDelete(query as CFDictionary)
-        
-        let status = SecItemAdd(query as CFDictionary, nil)
-        
-        guard status == errSecSuccess else {
-            throw KeychainError.unhandledError(status: status)
-        }
-    }
-    
-    func load(forKey key: String) throws -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        
-        var dataTypeRef: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &dataTypeRef)
-        
-        switch status {
-        case errSecSuccess:
-            guard let data = dataTypeRef as? Data,
-                  let string = String(data: data, encoding: .utf8) else {
-                throw KeychainError.unexpectedData
-            }
-            return string
-        case errSecItemNotFound:
-            return nil
-        default:
-            throw KeychainError.unhandledError(status: status)
-        }
-    }
-    
-    func delete(forKey key: String) throws {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key
-        ]
-        
-        let status = SecItemDelete(query as CFDictionary)
-        
-        guard status == errSecSuccess || status == errSecItemNotFound else {
-            throw KeychainError.unhandledError(status: status)
+    private func checkAuthState() async {
+        do {
+            let session = try await supabase.auth.session
+            let userName = session.user.userMetadata["name"]?.stringValue ?? ""
+            let userPhone = session.user.userMetadata["phone"]?.stringValue
+            let userDisplayName = session.user.userMetadata["display_name"]?.stringValue
+            let profileImageUrl = session.user.userMetadata["profile_image_url"]?.stringValue
+            
+            currentUser = User(
+                id: session.user.id.uuidString,
+                email: session.user.email ?? "",
+                name: userName,
+                phone: userPhone,
+                displayName: userDisplayName,
+                profileImageUrl: profileImageUrl,
+                createdAt: Date(),
+                updatedAt: Date()
+            )
+            isAuthenticated = true
+        } catch {
+            // No active session
+            currentUser = nil
+            isAuthenticated = false
         }
     }
 }

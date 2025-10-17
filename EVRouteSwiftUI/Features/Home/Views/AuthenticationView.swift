@@ -108,7 +108,7 @@ struct LoginView: View {
         isLoading = true
         
         do {
-            try await authManager.login(email: email, password: password)
+            try await authManager.signIn(email: email, password: password)
         } catch {
             print("Login error: \(error)")
             errorMessage = "Login failed. Please try again."
@@ -240,7 +240,7 @@ struct SignupView: View {
         isLoading = true
         
         do {
-            try await authManager.signup(email: email, password: password, name: name)
+            try await authManager.signUp(email: email, password: password, name: name)
         } catch {
             errorMessage = error.localizedDescription
             showError = true

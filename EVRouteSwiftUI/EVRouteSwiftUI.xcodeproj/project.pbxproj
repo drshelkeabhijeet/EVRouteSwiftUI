@@ -25,8 +25,19 @@
 		F6547F002E3D1FFF0056DD59 /* HomeViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EEA2E3D1EE10056DD59 /* HomeViewModelTests.swift */; };
 		F6547F012E3D20050056DD59 /* NetworkServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EE82E3D1EE10056DD59 /* NetworkServiceTests.swift */; };
 		F6547F022E3D200B0056DD59 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6547EE62E3D1EE10056DD59 /* ModelTests.swift */; };
+		F658B5E62EA1F87000A90DEE /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = F658B5E52EA1F87000A90DEE /* Auth */; };
+		F658B5E82EA1F87000A90DEE /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = F658B5E72EA1F87000A90DEE /* Functions */; };
+		F658B5EA2EA1F87000A90DEE /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = F658B5E92EA1F87000A90DEE /* PostgREST */; };
+		F658B5EC2EA1F87000A90DEE /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = F658B5EB2EA1F87000A90DEE /* Realtime */; };
+		F658B5EE2EA1F87000A90DEE /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = F658B5ED2EA1F87000A90DEE /* Storage */; };
+		F658B5F02EA1F87000A90DEE /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = F658B5EF2EA1F87000A90DEE /* Supabase */; };
 		F66A0E1D2E3D9DEB00036D2D /* SimpleLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66A0E1C2E3D9DEB00036D2D /* SimpleLocationManager.swift */; };
 		F66A0E1F2E3D9EF300036D2D /* SimpleAuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66A0E1E2E3D9EF300036D2D /* SimpleAuthenticationView.swift */; };
+		F6763E232EA1FC9800CBAB6D /* SupabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E222EA1FC9800CBAB6D /* SupabaseManager.swift */; };
+		F6763E292EA203D000CBAB6D /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E252EA203D000CBAB6D /* SignInView.swift */; };
+		F6763E2A2EA203D000CBAB6D /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E242EA203D000CBAB6D /* LandingView.swift */; };
+		F6763E2B2EA203D000CBAB6D /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E262EA203D000CBAB6D /* SignUpView.swift */; };
+		F6763E2F2EA21A3E00CBAB6D /* PhotoStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E2E2EA21A3E00CBAB6D /* PhotoStorageService.swift */; };
 		F6C5DD222E3D857100E27CB6 /* VehicleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD212E3D857100E27CB6 /* VehicleManager.swift */; };
 		F6C5DD242E3D86AA00E27CB6 /* VehicleSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD232E3D86AA00E27CB6 /* VehicleSelectionView.swift */; };
 		F6C5DD2A2E3D89A200E27CB6 /* BatterySlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD272E3D89A200E27CB6 /* BatterySlider.swift */; };
@@ -43,9 +54,9 @@
 		F6C5DD432E3D950800E27CB6 /* RouteAmenityChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD3F2E3D950800E27CB6 /* RouteAmenityChip.swift */; };
 		F6C5DD442E3D950800E27CB6 /* RouteResultsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD412E3D950800E27CB6 /* RouteResultsView.swift */; };
 		F6C5DD462E3D975800E27CB6 /* RouteHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD452E3D975800E27CB6 /* RouteHistoryView.swift */; };
-			F6D0B0012E4A0A0000AA00AA /* NearbyStationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */; };
-			F6D0B0022E4A0A0000AA00AA /* NearbyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */; };
-			F6D0B0032E4A0A0000AA00AA /* NearbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */; };
+		F6D0B0012E4A0A0000AA00AA /* NearbyStationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */; };
+		F6D0B0022E4A0A0000AA00AA /* NearbyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */; };
+		F6D0B0032E4A0A0000AA00AA /* NearbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -81,6 +92,11 @@
 		F6547EFE2E3D1F6A0056DD59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		F66A0E1C2E3D9DEB00036D2D /* SimpleLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleLocationManager.swift; sourceTree = "<group>"; };
 		F66A0E1E2E3D9EF300036D2D /* SimpleAuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleAuthenticationView.swift; sourceTree = "<group>"; };
+		F6763E222EA1FC9800CBAB6D /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
+		F6763E242EA203D000CBAB6D /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
+		F6763E252EA203D000CBAB6D /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
+		F6763E262EA203D000CBAB6D /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		F6763E2E2EA21A3E00CBAB6D /* PhotoStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStorageService.swift; sourceTree = "<group>"; };
 		F6C5DD212E3D857100E27CB6 /* VehicleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VehicleManager.swift; sourceTree = "<group>"; };
 		F6C5DD232E3D86AA00E27CB6 /* VehicleSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VehicleSelectionView.swift; path = Features/Home/Views/VehicleSelectionView.swift; sourceTree = SOURCE_ROOT; };
 		F6C5DD262E3D89A200E27CB6 /* AmenityChip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AmenityChip.swift; path = Features/RouteDetails/Views/AmenityChip.swift; sourceTree = SOURCE_ROOT; };
@@ -99,9 +115,9 @@
 		F6C5DD402E3D950800E27CB6 /* RouteMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapView.swift; sourceTree = "<group>"; };
 		F6C5DD412E3D950800E27CB6 /* RouteResultsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteResultsView.swift; sourceTree = "<group>"; };
 		F6C5DD452E3D975800E27CB6 /* RouteHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteHistoryView.swift; sourceTree = "<group>"; };
-			F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyStationsService.swift; path = Features/Nearby/Services/NearbyStationsService.swift; sourceTree = SOURCE_ROOT; };
-			F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyViewModel.swift; path = Features/Nearby/ViewModels/NearbyViewModel.swift; sourceTree = SOURCE_ROOT; };
-			F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyView.swift; path = Features/Nearby/Views/NearbyView.swift; sourceTree = SOURCE_ROOT; };
+		F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyStationsService.swift; path = Features/Nearby/Services/NearbyStationsService.swift; sourceTree = SOURCE_ROOT; };
+		F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyViewModel.swift; path = Features/Nearby/ViewModels/NearbyViewModel.swift; sourceTree = SOURCE_ROOT; };
+		F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyView.swift; path = Features/Nearby/Views/NearbyView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +125,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F658B5EA2EA1F87000A90DEE /* PostgREST in Frameworks */,
+				F658B5E82EA1F87000A90DEE /* Functions in Frameworks */,
+				F658B5F02EA1F87000A90DEE /* Supabase in Frameworks */,
+				F658B5E62EA1F87000A90DEE /* Auth in Frameworks */,
+				F658B5EE2EA1F87000A90DEE /* Storage in Frameworks */,
+				F658B5EC2EA1F87000A90DEE /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,6 +195,8 @@
 		F6547ED12E3D1EE10056DD59 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				F6763E2E2EA21A3E00CBAB6D /* PhotoStorageService.swift */,
+				F6763E222EA1FC9800CBAB6D /* SupabaseManager.swift */,
 				F66A0E1C2E3D9DEB00036D2D /* SimpleLocationManager.swift */,
 				F6C5DD372E3D93B100E27CB6 /* LocationManager.swift */,
 				F6C5DD382E3D93B100E27CB6 /* RouteStorageManager.swift */,
@@ -315,49 +339,16 @@
 		F6547EE52E3D1EE10056DD59 /* Features */ = {
 			isa = PBXGroup;
 			children = (
+				F6763E282EA203D000CBAB6D /* Authentication 2 */,
 				F6547ED62E3D1EE10056DD59 /* ChargingStations */,
 				F6547EDE2E3D1EE10056DD59 /* Home */,
 				F6547EE12E3D1EE10056DD59 /* Profile */,
 				F6547EE42E3D1EE10056DD59 /* RouteDetails */,
-					F6D0B0002E4A0A0000AA00AA /* Nearby */,
+				F6D0B0002E4A0A0000AA00AA /* Nearby */,
 			);
 			path = Features;
 			sourceTree = "<group>";
 		};
-			F6D0B0002E4A0A0000AA00AA /* Nearby */ = {
-				isa = PBXGroup;
-				children = (
-					F6D0B0072E4A0A0000AA00AA /* ViewModels */,
-					F6D0B0082E4A0A0000AA00AA /* Views */,
-					F6D0B0092E4A0A0000AA00AA /* Services */,
-				);
-				path = Nearby;
-				sourceTree = "<group>";
-			};
-			F6D0B0072E4A0A0000AA00AA /* ViewModels */ = {
-				isa = PBXGroup;
-				children = (
-					F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */,
-				);
-				path = ViewModels;
-				sourceTree = "<group>";
-			};
-			F6D0B0082E4A0A0000AA00AA /* Views */ = {
-				isa = PBXGroup;
-				children = (
-					F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */,
-				);
-				path = Views;
-				sourceTree = "<group>";
-			};
-			F6D0B0092E4A0A0000AA00AA /* Services */ = {
-				isa = PBXGroup;
-				children = (
-					F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */,
-				);
-				path = Services;
-				sourceTree = "<group>";
-			};
 		F6547EE72E3D1EE10056DD59 /* Models */ = {
 			isa = PBXGroup;
 			children = (
@@ -392,6 +383,24 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		F6763E272EA203D000CBAB6D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F6763E242EA203D000CBAB6D /* LandingView.swift */,
+				F6763E252EA203D000CBAB6D /* SignInView.swift */,
+				F6763E262EA203D000CBAB6D /* SignUpView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F6763E282EA203D000CBAB6D /* Authentication 2 */ = {
+			isa = PBXGroup;
+			children = (
+				F6763E272EA203D000CBAB6D /* Views */,
+			);
+			path = "Authentication 2";
+			sourceTree = "<group>";
+		};
 		F6C5DD252E3D891400E27CB6 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -401,6 +410,40 @@
 				F6C5DD292E3D89A200E27CB6 /* RoutePlanningView.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		F6D0B0002E4A0A0000AA00AA /* Nearby */ = {
+			isa = PBXGroup;
+			children = (
+				F6D0B0072E4A0A0000AA00AA /* ViewModels */,
+				F6D0B0082E4A0A0000AA00AA /* Views */,
+				F6D0B0092E4A0A0000AA00AA /* Services */,
+			);
+			path = Nearby;
+			sourceTree = "<group>";
+		};
+		F6D0B0072E4A0A0000AA00AA /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		F6D0B0082E4A0A0000AA00AA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F6D0B0092E4A0A0000AA00AA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -420,6 +463,12 @@
 			);
 			name = EVRouteSwiftUI;
 			packageProductDependencies = (
+				F658B5E52EA1F87000A90DEE /* Auth */,
+				F658B5E72EA1F87000A90DEE /* Functions */,
+				F658B5E92EA1F87000A90DEE /* PostgREST */,
+				F658B5EB2EA1F87000A90DEE /* Realtime */,
+				F658B5ED2EA1F87000A90DEE /* Storage */,
+				F658B5EF2EA1F87000A90DEE /* Supabase */,
 			);
 			productName = EVRouteSwiftUI;
 			productReference = F6547E302E3CFD020056DD59 /* EVRouteSwiftUI.app */;
@@ -473,6 +522,9 @@
 			);
 			mainGroup = F6547E272E3CFD020056DD59;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F658B5E42EA1F87000A90DEE /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F6547E312E3CFD020056DD59 /* Products */;
 			projectDirPath = "";
@@ -507,14 +559,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-					F6D0B0032E4A0A0000AA00AA /* NearbyView.swift in Sources */,
+				F6D0B0032E4A0A0000AA00AA /* NearbyView.swift in Sources */,
 				F6C5DD332E3D8F1100E27CB6 /* RouteService.swift in Sources */,
 				F6C5DD342E3D8F1100E27CB6 /* MockRouteService.swift in Sources */,
+				F6763E232EA1FC9800CBAB6D /* SupabaseManager.swift in Sources */,
 				F6547EED2E3D1EE10056DD59 /* HomeViewModel.swift in Sources */,
 				F6C5DD2F2E3D89D500E27CB6 /* RoutePlanningViewModel.swift in Sources */,
 				F6547EEE2E3D1EE10056DD59 /* HomeView.swift in Sources */,
 				F6C5DD2A2E3D89A200E27CB6 /* BatterySlider.swift in Sources */,
+				F6763E292EA203D000CBAB6D /* SignInView.swift in Sources */,
+				F6763E2A2EA203D000CBAB6D /* LandingView.swift in Sources */,
+				F6763E2B2EA203D000CBAB6D /* SignUpView.swift in Sources */,
 				F6C5DD2B2E3D89A200E27CB6 /* LocationSearchField.swift in Sources */,
+				F6763E2F2EA21A3E00CBAB6D /* PhotoStorageService.swift in Sources */,
 				F6C5DD422E3D950800E27CB6 /* RouteMapView.swift in Sources */,
 				F6C5DD432E3D950800E27CB6 /* RouteAmenityChip.swift in Sources */,
 				F6C5DD442E3D950800E27CB6 /* RouteResultsView.swift in Sources */,
@@ -524,7 +581,7 @@
 				F6547EEF2E3D1EE10056DD59 /* Endpoints.swift in Sources */,
 				F6547EF02E3D1EE10056DD59 /* NetworkService.swift in Sources */,
 				F6547EF12E3D1EE10056DD59 /* StationDetailView.swift in Sources */,
-					F6D0B0022E4A0A0000AA00AA /* NearbyViewModel.swift in Sources */,
+				F6D0B0022E4A0A0000AA00AA /* NearbyViewModel.swift in Sources */,
 				F66A0E1D2E3D9DEB00036D2D /* SimpleLocationManager.swift in Sources */,
 				F6C5DD242E3D86AA00E27CB6 /* VehicleSelectionView.swift in Sources */,
 				F6547EF22E3D1EE10056DD59 /* EVRouteApp.swift in Sources */,
@@ -541,7 +598,7 @@
 				F6547EFC2E3D1EE10056DD59 /* Route.swift in Sources */,
 				F66A0E1F2E3D9EF300036D2D /* SimpleAuthenticationView.swift in Sources */,
 				F6C5DD3C2E3D93D700E27CB6 /* PolylineDecoder.swift in Sources */,
-					F6D0B0012E4A0A0000AA00AA /* NearbyStationsService.swift in Sources */,
+				F6D0B0012E4A0A0000AA00AA /* NearbyStationsService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -698,11 +755,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSApplicationQueriesSchemes = comgooglemaps;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "EV Route needs your location to find nearby charging stations and plan routes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_LSApplicationQueriesSchemes = (
-					comgooglemaps,
-				);
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -735,11 +790,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_LSApplicationQueriesSchemes = comgooglemaps;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "EV Route needs your location to find nearby charging stations and plan routes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_LSApplicationQueriesSchemes = (
-					comgooglemaps,
-				);
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -832,6 +885,50 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F658B5E42EA1F87000A90DEE /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F658B5E52EA1F87000A90DEE /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F658B5E42EA1F87000A90DEE /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		F658B5E72EA1F87000A90DEE /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F658B5E42EA1F87000A90DEE /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		F658B5E92EA1F87000A90DEE /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F658B5E42EA1F87000A90DEE /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		F658B5EB2EA1F87000A90DEE /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F658B5E42EA1F87000A90DEE /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		F658B5ED2EA1F87000A90DEE /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F658B5E42EA1F87000A90DEE /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		F658B5EF2EA1F87000A90DEE /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F658B5E42EA1F87000A90DEE /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F6547E282E3CFD020056DD59 /* Project object */;
 }
