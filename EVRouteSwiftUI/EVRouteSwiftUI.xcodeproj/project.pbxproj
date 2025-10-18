@@ -34,9 +34,6 @@
 		F66A0E1D2E3D9DEB00036D2D /* SimpleLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66A0E1C2E3D9DEB00036D2D /* SimpleLocationManager.swift */; };
 		F66A0E1F2E3D9EF300036D2D /* SimpleAuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66A0E1E2E3D9EF300036D2D /* SimpleAuthenticationView.swift */; };
 		F6763E232EA1FC9800CBAB6D /* SupabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E222EA1FC9800CBAB6D /* SupabaseManager.swift */; };
-		F6763E292EA203D000CBAB6D /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E252EA203D000CBAB6D /* SignInView.swift */; };
-		F6763E2A2EA203D000CBAB6D /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E242EA203D000CBAB6D /* LandingView.swift */; };
-		F6763E2B2EA203D000CBAB6D /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E262EA203D000CBAB6D /* SignUpView.swift */; };
 		F6763E2F2EA21A3E00CBAB6D /* PhotoStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6763E2E2EA21A3E00CBAB6D /* PhotoStorageService.swift */; };
 		F6C5DD222E3D857100E27CB6 /* VehicleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD212E3D857100E27CB6 /* VehicleManager.swift */; };
 		F6C5DD242E3D86AA00E27CB6 /* VehicleSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6C5DD232E3D86AA00E27CB6 /* VehicleSelectionView.swift */; };
@@ -57,6 +54,9 @@
 		F6D0B0012E4A0A0000AA00AA /* NearbyStationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */; };
 		F6D0B0022E4A0A0000AA00AA /* NearbyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */; };
 		F6D0B0032E4A0A0000AA00AA /* NearbyView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */; };
+		F6D0B00A2E4A0A0000AA00AA /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B00F2E4A0A0000AA00AA /* LandingView.swift */; };
+		F6D0B00B2E4A0A0000AA00AA /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0102E4A0A0000AA00AA /* SignInView.swift */; };
+		F6D0B00C2E4A0A0000AA00AA /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D0B0112E4A0A0000AA00AA /* SignUpView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,9 +93,6 @@
 		F66A0E1C2E3D9DEB00036D2D /* SimpleLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleLocationManager.swift; sourceTree = "<group>"; };
 		F66A0E1E2E3D9EF300036D2D /* SimpleAuthenticationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleAuthenticationView.swift; sourceTree = "<group>"; };
 		F6763E222EA1FC9800CBAB6D /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
-		F6763E242EA203D000CBAB6D /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
-		F6763E252EA203D000CBAB6D /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
-		F6763E262EA203D000CBAB6D /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
 		F6763E2E2EA21A3E00CBAB6D /* PhotoStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStorageService.swift; sourceTree = "<group>"; };
 		F6C5DD212E3D857100E27CB6 /* VehicleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VehicleManager.swift; sourceTree = "<group>"; };
 		F6C5DD232E3D86AA00E27CB6 /* VehicleSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = VehicleSelectionView.swift; path = Features/Home/Views/VehicleSelectionView.swift; sourceTree = SOURCE_ROOT; };
@@ -118,6 +115,9 @@
 		F6D0B0042E4A0A0000AA00AA /* NearbyStationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyStationsService.swift; path = Features/Nearby/Services/NearbyStationsService.swift; sourceTree = SOURCE_ROOT; };
 		F6D0B0052E4A0A0000AA00AA /* NearbyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyViewModel.swift; path = Features/Nearby/ViewModels/NearbyViewModel.swift; sourceTree = SOURCE_ROOT; };
 		F6D0B0062E4A0A0000AA00AA /* NearbyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NearbyView.swift; path = Features/Nearby/Views/NearbyView.swift; sourceTree = SOURCE_ROOT; };
+		F6D0B00F2E4A0A0000AA00AA /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LandingView.swift; path = Features/Authentication/Views/LandingView.swift; sourceTree = SOURCE_ROOT; };
+		F6D0B0102E4A0A0000AA00AA /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SignInView.swift; path = Features/Authentication/Views/SignInView.swift; sourceTree = SOURCE_ROOT; };
+		F6D0B0112E4A0A0000AA00AA /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SignUpView.swift; path = Features/Authentication/Views/SignUpView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -339,7 +339,7 @@
 		F6547EE52E3D1EE10056DD59 /* Features */ = {
 			isa = PBXGroup;
 			children = (
-				F6763E282EA203D000CBAB6D /* Authentication 2 */,
+				F6D0B00D2E4A0A0000AA00AA /* Authentication */,
 				F6547ED62E3D1EE10056DD59 /* ChargingStations */,
 				F6547EDE2E3D1EE10056DD59 /* Home */,
 				F6547EE12E3D1EE10056DD59 /* Profile */,
@@ -383,24 +383,6 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
-		F6763E272EA203D000CBAB6D /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				F6763E242EA203D000CBAB6D /* LandingView.swift */,
-				F6763E252EA203D000CBAB6D /* SignInView.swift */,
-				F6763E262EA203D000CBAB6D /* SignUpView.swift */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		F6763E282EA203D000CBAB6D /* Authentication 2 */ = {
-			isa = PBXGroup;
-			children = (
-				F6763E272EA203D000CBAB6D /* Views */,
-			);
-			path = "Authentication 2";
-			sourceTree = "<group>";
-		};
 		F6C5DD252E3D891400E27CB6 /* Components */ = {
 			isa = PBXGroup;
 			children = (
@@ -420,6 +402,24 @@
 				F6D0B0092E4A0A0000AA00AA /* Services */,
 			);
 			path = Nearby;
+			sourceTree = "<group>";
+		};
+		F6D0B00D2E4A0A0000AA00AA /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				F6D0B00E2E4A0A0000AA00AA /* Views */,
+			);
+			path = Authentication;
+			sourceTree = "<group>";
+		};
+		F6D0B00E2E4A0A0000AA00AA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F6D0B00F2E4A0A0000AA00AA /* LandingView.swift */,
+				F6D0B0102E4A0A0000AA00AA /* SignInView.swift */,
+				F6D0B0112E4A0A0000AA00AA /* SignUpView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		F6D0B0072E4A0A0000AA00AA /* ViewModels */ = {
@@ -560,6 +560,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F6D0B0032E4A0A0000AA00AA /* NearbyView.swift in Sources */,
+				F6D0B00A2E4A0A0000AA00AA /* LandingView.swift in Sources */,
+				F6D0B00B2E4A0A0000AA00AA /* SignInView.swift in Sources */,
+				F6D0B00C2E4A0A0000AA00AA /* SignUpView.swift in Sources */,
 				F6C5DD332E3D8F1100E27CB6 /* RouteService.swift in Sources */,
 				F6C5DD342E3D8F1100E27CB6 /* MockRouteService.swift in Sources */,
 				F6763E232EA1FC9800CBAB6D /* SupabaseManager.swift in Sources */,
@@ -567,9 +570,6 @@
 				F6C5DD2F2E3D89D500E27CB6 /* RoutePlanningViewModel.swift in Sources */,
 				F6547EEE2E3D1EE10056DD59 /* HomeView.swift in Sources */,
 				F6C5DD2A2E3D89A200E27CB6 /* BatterySlider.swift in Sources */,
-				F6763E292EA203D000CBAB6D /* SignInView.swift in Sources */,
-				F6763E2A2EA203D000CBAB6D /* LandingView.swift in Sources */,
-				F6763E2B2EA203D000CBAB6D /* SignUpView.swift in Sources */,
 				F6C5DD2B2E3D89A200E27CB6 /* LocationSearchField.swift in Sources */,
 				F6763E2F2EA21A3E00CBAB6D /* PhotoStorageService.swift in Sources */,
 				F6C5DD422E3D950800E27CB6 /* RouteMapView.swift in Sources */,
