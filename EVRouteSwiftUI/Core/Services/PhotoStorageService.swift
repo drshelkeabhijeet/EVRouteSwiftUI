@@ -78,7 +78,7 @@ final class PhotoStorageService {
     }
     
     private func updateUserProfileImageUrl(userId: String, imageUrl: String) async throws {
-        try await supabase.database
+        try await supabase
             .from("user_profiles")
             .update(["profile_image_url": imageUrl, "updated_at": "now()"])
             .eq("id", value: userId)
